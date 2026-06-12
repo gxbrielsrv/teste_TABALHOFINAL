@@ -2,6 +2,7 @@ import pygame
 import sys
 from pytmx.util_pygame import load_pygame
 from pygame.locals import QUIT, KEYDOWN, MOUSEBUTTONDOWN, K_w, K_a, K_s, K_d, K_e, K_LSHIFT
+import math
 
 pygame.init()
 
@@ -22,12 +23,18 @@ TILE = 16
 
 # ===== COLISÕES DO MAPA =====
 paredes = []
+
 camada_colisao = MapaOriginal.get_layer_by_name("Colisao")
 
-for x, y, gid in camada_colisao:
-    if gid:
-        parede = pygame.Rect(x * TILE, y * TILE, TILE, TILE)
-        paredes.append(parede)
+for obj in camada_colisao:
+    paredes.append(
+        pygame.Rect(
+            obj.x,
+            obj.y,
+            obj.width,
+            obj.height
+        )
+    )
 
 # ===== CARREGAMENTO DE ANIMAÇÕES =====
 # Idle
@@ -93,8 +100,8 @@ for i in range(6):
 for i in range(4):
     soco_down_list.append(pygame.transform.scale(soco_down.subsurface((i * 12, 0, 12, 18)), (16, 16)))
     soco_up_list.append(pygame.transform.scale(soco_up.subsurface((i * 12, 0, 12, 17)), (16, 16)))
-    soco_left_list.append(pygame.transform.scale(soco_left.subsurface((i * 20, 0, 20, 18)), (16, 16)))
-    soco_right_list.append(pygame.transform.scale(soco_right.subsurface((i * 20, 0, 20, 18)), (16, 16)))
+    soco_left_list.append(pygame.transform.scale(soco_left.subsurface((i * 20, 0, 20, 18)), (20, 20)))
+    soco_right_list.append(pygame.transform.scale(soco_right.subsurface((i * 20, 0, 20, 18)), (20, 20)))
 
 # Processamento de animações de pegar (3 frames)
 for i in range(3):
@@ -118,7 +125,7 @@ pegar = False
 
 # Velocidade
 velocidade = 1
-velocidade_shift = 1.3
+velocidade_shift = 1.6
 
 # ===== LOOP PRINCIPAL =====
 while True:
@@ -171,16 +178,34 @@ while True:
 
         # Movimento horizontal
         dx = 0
+        dy = 0
+
         if teclas[K_a]:
-            dx = -vel
+            dx -= 1
             animacao_atual = run_left_list
             ultima_direcao = 'left'
-            mover = True
-
         if teclas[K_d]:
-            dx = vel
+            dx += 1
             animacao_atual = run_right_list
             ultima_direcao = 'right'
+        if teclas[K_w]:
+            dy -= 1
+            animacao_atual = run_up_list
+            ultima_direcao = 'up'
+        if teclas[K_s]:
+            dy += 1
+            animacao_atual = run_down_list
+            ultima_direcao = 'down'
+        if dx != 0 or dy != 0:
+
+            tamanho = math.sqrt(dx * dx + dy * dy)
+
+            dx /= tamanho
+            dy /= tamanho
+
+            dx *= vel
+            dy *= vel
+
             mover = True
 
         # Aplicar movimento horizontal com colisão
@@ -194,19 +219,7 @@ while True:
                     jogador.left = parede.right
 
         # Movimento vertical
-        dy = 0
-        if teclas[K_w]:
-            dy = -vel
-            animacao_atual = run_up_list
-            ultima_direcao = 'up'
-            mover = True
-
-        if teclas[K_s]:
-            dy = vel
-            animacao_atual = run_down_list
-            ultima_direcao = 'down'
-            mover = True
-
+       
         # Aplicar movimento vertical com colisão
         jogador.y += dy
 
@@ -274,11 +287,16 @@ while True:
                     )
 
     # Desenhar personagem animado
+    sprite = animacao_atual[frame]
+
+    offset_x = (sprite.get_width() - jogador.width) // 2
+    offset_y = sprite.get_height() - jogador.height
+
     tela_jogo.blit(
-        animacao_atual[frame],
+        sprite,
         (
-            jogador.x - camera_x,
-            jogador.y - camera_y
+            jogador.x - camera_x - offset_x,
+            jogador.y - camera_y - offset_y
         )
     )
 
