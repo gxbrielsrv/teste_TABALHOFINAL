@@ -23,7 +23,8 @@ TILE = 16
 paredes = []
 
 camada_colisao = MapaOriginal.get_layer_by_name("Colisao")
-
+print(MapaOriginal.tilewidth)
+print(MapaOriginal.tileheight)
 for x, y, gid in camada_colisao:
     if gid:
         parede = pygame.Rect(
@@ -129,3 +130,4 @@ while True:
 
     pygame.display.flip()
     clock.tick(60)
+
