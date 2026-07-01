@@ -8,43 +8,54 @@ clock = time.Clock()
 
 screen = display.set_mode((1200,700))
 
-idle_down = image.load('Character_down_idle-Sheet6.png')
-idle_right = image.load('Character_side_idle-Sheet6.png')
-idle_left = image.load('Character_side-left_idle-Sheet6.png')
-idle_up = image.load('Character_up_idle-Sheet6.png')
+idle_down = image.load('Character_down_idle-Sheet6.png').convert_alpha()
+idle_right = image.load('Character_side_idle-Sheet6.png').convert_alpha()
+idle_left = image.load('Character_side-left_idle-Sheet6.png').convert_alpha()
+idle_up = image.load('Character_up_idle-Sheet6.png').convert_alpha()
 
-run_down = image.load('Character_down_run-Sheet6.png')
-run_right = image.load('Character_side_run-Sheet6.png')
-run_left = image.load('Character_side-left_run-Sheet6.png')
-run_up = image.load('Character_up_run-Sheet6.png')
+run_down = image.load('Character_down_run-Sheet6.png').convert_alpha()
+run_right = image.load('Character_side_run-Sheet6.png').convert_alpha()
+run_left = image.load('Character_side-left_run-Sheet6.png').convert_alpha()
+run_up = image.load('Character_up_run-Sheet6.png').convert_alpha()
 
-soco_down = image.load('Character_down_punch-Sheet4.png')
-soco_up = image.load('Character_up_punch-Sheet4.png')
-soco_left = image.load('Character_side-left_punch-Sheet4.png')
-soco_right = image.load('Character_side_punch-Sheet4.png')
+soco_down = image.load('Character_down_punch-Sheet4.png').convert_alpha()
+soco_up = image.load('Character_up_punch-Sheet4.png').convert_alpha()
+soco_left = image.load('Character_side-left_punch-Sheet4.png').convert_alpha()
+soco_right = image.load('Character_side_punch-Sheet4.png').convert_alpha()
 
-pegar_down = image.load('Character_down_Pick-up-Sheet3.png')
-pegar_up = image.load('Character_up_Pick-up-Sheet3.png')
-pegar_left = image.load('Character_side-left_Pick-up-Sheet3.png')
-pegar_right = image.load('Character_side_Pick-up-Sheet3.png')
+pegar_down = image.load('Character_down_Pick-up-Sheet3.png').convert_alpha()
+pegar_up = image.load('Character_up_Pick-up-Sheet3.png').convert_alpha()
+pegar_left = image.load('Character_side-left_Pick-up-Sheet3.png').convert_alpha()
+pegar_right = image.load('Character_side_Pick-up-Sheet3.png').convert_alpha()
 
-morte_right = image.load('Character_side_death3-Sheet6.png')
-morte_left = image.load('Character_side-left_death3-Sheet7.png')
+morte_right = image.load('Character_side_death3-Sheet6.png').convert_alpha()
+morte_left = image.load('Character_side-left_death3-Sheet7.png').convert_alpha()
 
-imagem_taco = image.load('bat.png')
-imagem_taco = transform.scale(imagem_taco, (30, 30))
+imagem_taco = image.load('bat.png').convert_alpha()
+imagem_taco = transform.scale(imagem_taco, (30, 30)).convert_alpha()
 
 #imagem de ataque do taco
-taco_down_ataque = image.load('Bat_down_attack-Sheet4.png')
-taco_up_ataque = image.load('Bat_up_attack-Sheet4.png')
-taco_right_ataque = image.load('Bat_side_attack-Sheet4.png')
-taco_left_ataque = image.load('Bat_side-left_attack-Sheet4.png')
+taco_down_ataque = image.load('Bat_down_attack-Sheet4.png').convert_alpha()
+taco_up_ataque = image.load('Bat_up_attack-Sheet4.png').convert_alpha()
+taco_right_ataque = image.load('Bat_side_attack-Sheet4.png').convert_alpha()
+taco_left_ataque = image.load('Bat_side-left_attack-Sheet4.png').convert_alpha()
 
 #imagem do boneco away/correndo com taco
-taco_down_idle = image.load('Bat_down_idle-and-run-Sheet6.png')
-taco_up_idle = image.load('Bat_up_idle-and-run-Sheet6.png')
-taco_right_idle = image.load('Bat_side_idle-and-run-Sheet6.png')
-taco_left_idle = image.load('Bat_side-left_idle-and-run-Sheet6.png')
+taco_down_idle = image.load('Bat_down_idle-and-run-Sheet6.png').convert_alpha()
+taco_up_idle = image.load('Bat_up_idle-and-run-Sheet6.png').convert_alpha()
+taco_right_idle = image.load('Bat_side_idle-and-run-Sheet6.png').convert_alpha()
+taco_left_idle = image.load('Bat_side-left_idle-and-run-Sheet6.png').convert_alpha()
+
+#inimigos
+zumbipeq_down_idle = image.load('Zombie_Small_Down_Idle-Sheet6.png').convert_alpha()
+zumbipeq_up_idle = image.load('Zombie_Small_Up_Idle-Sheet6.png').convert_alpha()
+zumbipeq_left_idle = image.load('Zombie_Small_Side-left_Idle-Sheet6.png').convert_alpha()
+zumbipeq_right_idle = image.load('Zombie_Small_Side_Idle-Sheet6.png').convert_alpha()
+
+zumbipeq_down_walk = image.load('Zombie_Small_Down_walk-Sheet6.png').convert_alpha()
+zumbipeq_up_walk = image.load('Zombie_Small_Up_Walk-Sheet6.png').convert_alpha()
+zumbipeq_left_walk = image.load('Zombie_Small_Side-left_Walk-Sheet6.png').convert_alpha()
+zumbipeq_right_walk = image.load('Zombie_Small_Side_Walk-Sheet6.png').convert_alpha()
 
 idle_down_list = []
 idle_up_list = []
@@ -81,6 +92,18 @@ taco_up_idle_list = []
 taco_right_idle_list = []
 taco_left_idle_list = []
 
+#parte zumbi
+
+zumbipeq_down_idle_list = []
+zumbipeq_up_idle_list = []
+zumbipeq_left_idle_list = []
+zumbipeq_right_idle_list = []
+
+zumbipeq_down_walk_list = []
+zumbipeq_up_walk_list = []
+zumbipeq_left_walk_list = []
+zumbipeq_right_walk_list = []
+
 
 for i in range(6):
 
@@ -100,6 +123,15 @@ for i in range(6):
     run_right_list.append(transform.scale(run_right.subsurface((i * 14, 0, 14, 17)),(50, 70)))
     taco_right_idle_list.append(transform.scale(taco_right_idle.subsurface((i * 16,0,16,13)),(50,70)))
 
+    zumbipeq_down_idle_list.append(transform.scale(zumbipeq_down_idle.subsurface((i * 13, 0, 13, 16)), (50, 70)))
+    zumbipeq_up_idle_list.append(transform.scale(zumbipeq_up_idle.subsurface((i * 13, 0, 13, 15)), (50, 70)))
+    zumbipeq_left_idle_list.append(transform.scale(zumbipeq_left_idle.subsurface((i * 11, 0, 11, 15)), (50, 70)))
+    zumbipeq_right_idle_list.append(transform.scale(zumbipeq_right_idle.subsurface((i * 11, 0, 11, 15)), (50, 70)))
+
+    zumbipeq_down_walk_list.append(transform.scale(zumbipeq_down_walk.subsurface((i * 12, 0, 12, 16)), (50, 70)))
+    zumbipeq_up_walk_list.append(transform.scale(zumbipeq_up_walk.subsurface((i * 13, 0, 13, 16)), (50, 70)))
+    zumbipeq_left_walk_list.append(transform.scale(zumbipeq_left_walk.subsurface((i * 13, 0, 13, 15)), (50, 70)))
+    zumbipeq_right_walk_list.append(transform.scale(zumbipeq_right_walk.subsurface((i * 13, 0, 13, 15)), (50, 70)))
 
 
 for i in range(4):
@@ -127,8 +159,10 @@ for i in range(7):
     morte_right_list.append(transform.scale(morte_right.subsurface((i * 21,0,21,16)), (70,70)))
 
 animacao_atual = idle_right_list
+animacao_taco = None
 ultima_direcao = "right"
 
+frame_taco = 0
 frame = 0
 anim_time = 0 
 
@@ -144,6 +178,18 @@ pos_x = 700
 pos_y = 200
 taco_x = 500
 taco_y = 300
+
+#zumbi
+
+zumbi_x = 950
+zumbi_y = 500
+zumbi_direcao = "down"
+zumbi_animacao_atual = zumbipeq_down_idle_list
+zumbi_frame = 0
+zumbi_anim_time = 0
+zumbi_velocidade = 1.3
+zumbi_alcance_deteccao = 250
+zumbi_distancia_minima = 45
 
 
 velocidade = 2
@@ -167,15 +213,19 @@ while True:
             
                 if ultima_direcao == 'down':
                     animacao_atual = soco_down_list
+                    animacao_taco = taco_down_ataque_list if tem_taco else None
                 
                 elif ultima_direcao == 'up':
                     animacao_atual = soco_up_list
+                    animacao_taco = taco_up_ataque_list if tem_taco else None
 
                 elif ultima_direcao == 'left':
                     animacao_atual = soco_left_list
+                    animacao_taco = taco_left_ataque_list if tem_taco else None
 
                 elif ultima_direcao == 'right':
                     animacao_atual = soco_right_list    
+                    animacao_taco = taco_right_ataque_list if tem_taco else None  
             
         if ev.type == KEYDOWN and ev.key == K_e:
             if not pegar and not morto and not morrer:
@@ -220,24 +270,32 @@ while True:
 
         if keys[K_w]:
             animacao_atual = run_up_list
+            if tem_taco:
+                animacao_taco = taco_up_idle_list
             ultima_direcao = 'up'
             mover = True
             pos_y -= vel
         
         if keys[K_a]:
             animacao_atual = run_left_list
+            if tem_taco:
+                animacao_taco = taco_left_idle_list
             ultima_direcao = 'left'
             mover = True
             pos_x -= vel
 
         if keys[K_s]:
             animacao_atual = run_down_list
+            if tem_taco:
+                animacao_taco = taco_down_idle_list 
             ultima_direcao = 'down'
             mover = True
             pos_y += vel
 
         if keys[K_d]:
             animacao_atual = run_right_list
+            if tem_taco:
+                animacao_taco = taco_right_idle_list
             ultima_direcao = 'right'
             mover = True
             pos_x += vel
@@ -246,15 +304,23 @@ while True:
 
             if ultima_direcao == "down":
                 animacao_atual = idle_down_list
+                if tem_taco:
+                    animacao_taco = taco_down_idle_list
 
             elif ultima_direcao == "up":
                 animacao_atual = idle_up_list
+                if tem_taco:
+                    animacao_taco = taco_up_idle_list
 
             elif ultima_direcao == "left":
                 animacao_atual = idle_left_list
+                if tem_taco:
+                    animacao_taco = taco_left_idle_list
 
             elif ultima_direcao == "right":
                 animacao_atual = idle_right_list
+                if tem_taco:
+                    animacao_taco = taco_right_idle_list
 
     anim_time += dt
 
@@ -287,7 +353,6 @@ while True:
                     elif ultima_direcao == 'right':
                         animacao_atual = idle_right_list
 
-
                 if pegar:
                     pegar = False
 
@@ -299,9 +364,59 @@ while True:
                         animacao_atual = idle_left_list
                     elif ultima_direcao == 'right':
                         animacao_atual = idle_right_list
+    
+    
+    dx = pos_x - zumbi_x
+    dy = pos_y - zumbi_y
+    distancia = (dx**2 + dy**2) ** 0.5
+
+    zumbi_moveu = False
+
+    if distancia < zumbi_alcance_deteccao and distancia > zumbi_distancia_minima:
+        zumbi_moveu = True
+
+        dx /= distancia
+        dy /= distancia
+
+        zumbi_x += dx * zumbi_velocidade
+        zumbi_y += dy * zumbi_velocidade
+
+    
+        if abs(dx) > abs(dy):
+            zumbi_direcao = "right" if dx > 0 else "left"
+        else:
+            zumbi_direcao = "down" if dy > 0 else "up"
+
+        if zumbi_direcao == "down":
+            zumbi_animacao_atual = zumbipeq_down_walk_list
+        elif zumbi_direcao == "up":
+            zumbi_animacao_atual = zumbipeq_up_walk_list
+        elif zumbi_direcao == "left":
+            zumbi_animacao_atual = zumbipeq_left_walk_list
+        elif zumbi_direcao == "right":
+            zumbi_animacao_atual = zumbipeq_right_walk_list
+
+    else:
+        if zumbi_direcao == "down":
+            zumbi_animacao_atual = zumbipeq_down_idle_list
+        elif zumbi_direcao == "up":
+            zumbi_animacao_atual = zumbipeq_up_idle_list
+        elif zumbi_direcao == "left":
+            zumbi_animacao_atual = zumbipeq_left_idle_list
+        elif zumbi_direcao == "right":
+            zumbi_animacao_atual = zumbipeq_right_idle_list
+
+    zumbi_anim_time += dt
+    if zumbi_anim_time >= 96:
+        zumbi_anim_time = 0
+        zumbi_frame += 1
+        if zumbi_frame >= len(zumbi_animacao_atual):
+            zumbi_frame = 0
         
 
     screen.fill((73, 77, 74))
+
+    screen.blit(zumbi_animacao_atual[zumbi_frame], (zumbi_x, zumbi_y))
 
     draw_x = pos_x
     draw_y = pos_y
@@ -313,8 +428,10 @@ while True:
         #     draw_x += 10 
 
     screen.blit(animacao_atual[frame], (draw_x, draw_y))
-    #if tem_taco:
-        #draw.circle(screen, (139, 69, 19), (draw_x + 40, draw_y + 30), 5)
+
+    if tem_taco and animacao_taco:
+        screen.blit(animacao_taco[frame], (draw_x, draw_y))
+    
     if taco_no_chao:
         screen.blit(imagem_taco, (taco_x, taco_y))
 
