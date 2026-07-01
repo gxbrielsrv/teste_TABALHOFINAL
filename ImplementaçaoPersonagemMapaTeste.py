@@ -1,12 +1,12 @@
 import pygame
 import sys
 from pytmx.util_pygame import load_pygame
-from pygame.locals import QUIT, KEYDOWN, MOUSEBUTTONDOWN, K_w, K_a, K_s, K_d, K_e, K_l, K_LSHIFT
+from pygame.locals import QUIT, KEYDOWN, MOUSEBUTTONDOWN, K_w, K_a, K_s, K_d, K_e, K_LSHIFT
 import math
 
 pygame.init()
 
-
+# ===== CONFIGURAÇÕES DE TELA =====
 LARGURA = 800
 ALTURA = 600
 ZOOM = 3.5
@@ -17,11 +17,11 @@ pygame.display.set_caption("Jogo com Mapa e Personagem")
 tela_jogo = pygame.Surface((LARGURA // ZOOM, ALTURA // ZOOM))
 clock = pygame.time.Clock()
 
-#mapa
+# ===== CARREGAMENTO DO MAPA =====
 MapaOriginal = load_pygame("MapaOriginal.tmx")
 TILE = 16
 
-#colisoes
+# ===== COLISÕES DO MAPA =====
 paredes = []
 
 camada_colisao = MapaOriginal.get_layer_by_name("Colisao")
@@ -36,50 +36,32 @@ for obj in camada_colisao:
         )
     )
 
-
+# ===== CARREGAMENTO DE ANIMAÇÕES =====
 # Idle
 idle_down = pygame.image.load('Character_down_idle-Sheet6.png')
 idle_right = pygame.image.load('Character_side_idle-Sheet6.png')
 idle_left = pygame.image.load('Character_side-left_idle-Sheet6.png')
 idle_up = pygame.image.load('Character_up_idle-Sheet6.png')
 
-# Correr
+# Run
 run_down = pygame.image.load('Character_down_run-Sheet6.png')
 run_right = pygame.image.load('Character_side_run-Sheet6.png')
 run_left = pygame.image.load('Character_side-left_run-Sheet6.png')
 run_up = pygame.image.load('Character_up_run-Sheet6.png')
 
-#Soco
+# Punch (Soco)
 soco_down = pygame.image.load('Character_down_punch-Sheet4.png')
 soco_up = pygame.image.load('Character_up_punch-Sheet4.png')
 soco_left = pygame.image.load('Character_side-left_punch-Sheet4.png')
 soco_right = pygame.image.load('Character_side_punch-Sheet4.png')
 
-#Pegar
+# Pick-up (Pegar)
 pegar_down = pygame.image.load('Character_down_Pick-up-Sheet3.png')
 pegar_up = pygame.image.load('Character_up_Pick-up-Sheet3.png')
 pegar_left = pygame.image.load('Character_side-left_Pick-up-Sheet3.png')
 pegar_right = pygame.image.load('Character_side_Pick-up-Sheet3.png')
 
-#Morrer
-morte_right = pygame.image.load('Character_side_death3-Sheet6.png')
-morte_left = pygame.image.load('Character_side-left_death3-Sheet7.png')
-
-#Taco
-imagem_taco = pygame.image.load('bat.png')
-imagem_taco = pygame.transform.scale(imagem_taco, (16, 16))
-
-taco_down_ataque = pygame.image.load('Bat_down_attack-Sheet4.png')
-taco_up_ataque = pygame.image.load('Bat_up_attack-Sheet4.png')
-taco_right_ataque = pygame.image.load('Bat_side_attack-Sheet4.png')
-taco_left_ataque = pygame.image.load('Bat_side-left_attack-Sheet4.png')
-
-taco_down_idle = pygame.image.load('Bat_down_idle-and-run-Sheet6.png')
-taco_up_idle = pygame.image.load('Bat_up_idle-and-run-Sheet6.png')
-taco_right_idle = pygame.image.load('Bat_side_idle-and-run-Sheet6.png')
-taco_left_idle = pygame.image.load('Bat_side-left_idle-and-run-Sheet6.png')
-
-#Animaçoes
+# ===== CRIAÇÃO DAS LISTAS DE ANIMAÇÃO =====
 idle_down_list = []
 idle_up_list = []
 idle_left_list = []
@@ -100,20 +82,7 @@ pegar_up_list = []
 pegar_left_list = []
 pegar_right_list = []
 
-morte_right_list = []
-morte_left_list = []
-
-taco_down_ataque_list = []
-taco_up_ataque_list = []
-taco_left_ataque_list = []
-taco_right_ataque_list = []
-
-taco_down_idle_list = []
-taco_up_idle_list = []
-taco_left_idle_list = []
-taco_right_idle_list = []
-
-#Idle e correr
+# Processamento de animações de idle e run (6 frames)
 for i in range(6):
     idle_down_list.append(pygame.transform.scale(idle_down.subsurface((i * 13, 0, 13, 16)), (16, 16)))
     run_down_list.append(pygame.transform.scale(run_down.subsurface((i * 13, 0, 13, 17)), (16, 16)))
@@ -127,40 +96,22 @@ for i in range(6):
     idle_right_list.append(pygame.transform.scale(idle_right.subsurface((i * 12, 0, 12, 16)), (16, 16)))
     run_right_list.append(pygame.transform.scale(run_right.subsurface((i * 14, 0, 14, 17)), (16, 16)))
 
-    taco_down_idle_list.append(pygame.transform.scale(taco_down_idle.subsurface((i * 17, 0, 17, 11)), (16, 16)))
-    taco_up_idle_list.append(pygame.transform.scale(taco_up_idle.subsurface((i * 16, 0, 16, 11)), (16, 16)))
-    taco_left_idle_list.append(pygame.transform.scale(taco_left_idle.subsurface((i * 16, 0, 16, 13)), (16, 16)))
-    taco_right_idle_list.append(pygame.transform.scale(taco_right_idle.subsurface((i * 16, 0, 16, 13)), (16, 16)))
-
-#Soco
+# Processamento de animações de soco (4 frames)
 for i in range(4):
     soco_down_list.append(pygame.transform.scale(soco_down.subsurface((i * 12, 0, 12, 18)), (16, 16)))
     soco_up_list.append(pygame.transform.scale(soco_up.subsurface((i * 12, 0, 12, 17)), (16, 16)))
     soco_left_list.append(pygame.transform.scale(soco_left.subsurface((i * 20, 0, 20, 18)), (20, 20)))
     soco_right_list.append(pygame.transform.scale(soco_right.subsurface((i * 20, 0, 20, 18)), (20, 20)))
-    taco_down_ataque_list.append(pygame.transform.scale(taco_down_ataque.subsurface((i * 20, 0, 20, 25)), (16, 16)))
-    taco_up_ataque_list.append(pygame.transform.scale(taco_up_ataque.subsurface((i * 20, 0, 20, 25)), (16, 16)))
-    taco_left_ataque_list.append(pygame.transform.scale(taco_left_ataque.subsurface((i * 28, 0, 28, 16)), (20, 20)))
-    taco_right_ataque_list.append(pygame.transform.scale(taco_right_ataque.subsurface((i * 28, 0, 28, 16)), (20, 20)))
 
-#Pegar
+# Processamento de animações de pegar (3 frames)
 for i in range(3):
     pegar_down_list.append(pygame.transform.scale(pegar_down.subsurface((i * 12, 0, 12, 16)), (16, 16)))
     pegar_up_list.append(pygame.transform.scale(pegar_up.subsurface((i * 11, 0, 11, 15)), (16, 16)))
     pegar_left_list.append(pygame.transform.scale(pegar_left.subsurface((i * 11, 0, 11, 16)), (16, 16)))
     pegar_right_list.append(pygame.transform.scale(pegar_right.subsurface((i * 11, 0, 11, 16)), (16, 16)))
 
-#Morte
-for i in range(7):
-    morte_left_list.append(pygame.transform.scale(morte_left.subsurface((i * 21, 0, 21, 16)), (20, 20)))
-    morte_right_list.append(pygame.transform.scale(morte_right.subsurface((i * 21, 0, 21, 16)), (20, 20)))
-
-jogador = pygame.Rect(80, 125, 16, 16)
-
-taco_rect = pygame.Rect(450, 270, 16, 16)
-taco_no_chao = True
-tem_taco = False
-perto_do_taco = False
+# ===== INICIALIZAÇÃO DO PERSONAGEM =====
+jogador = pygame.Rect(80, 125, 16, 16)  # 16x16 para grid de 16x16
 
 # Estado de animação
 animacao_atual = idle_right_list
@@ -168,21 +119,19 @@ ultima_direcao = "right"
 frame = 0
 anim_time = 0
 
-
+# Estados de ação
 atacar = False
 pegar = False
-morto = False
-morrer = False
 
+# Velocidade
 velocidade = 1
 velocidade_shift = 1.6
 
-
+# ===== LOOP PRINCIPAL =====
 while True:
     dt = clock.tick(60)
 
-    perto_do_taco = (abs(jogador.centerx - taco_rect.centerx) < 20 and abs(jogador.centery - taco_rect.centery) < 20)
-
+    # ===== EVENTOS =====
     for evento in pygame.event.get():
         if evento.type == QUIT:
             pygame.quit()
@@ -190,7 +139,7 @@ while True:
 
         # Ataque com clique do mouse
         if evento.type == MOUSEBUTTONDOWN and evento.button == 1:
-            if not atacar and not pegar and not morrer and not morto:
+            if not atacar and not pegar:
                 atacar = True
                 anim_time = 0
                 frame = 0
@@ -204,45 +153,30 @@ while True:
                 elif ultima_direcao == 'right':
                     animacao_atual = soco_right_list
 
-        # Pegar com tecla E
+        # Pick-up com tecla E
         if evento.type == KEYDOWN and evento.key == K_e:
-            if not pegar and not atacar and not morrer and not morto:
-                if perto_do_taco and taco_no_chao:
-                    pegar = True
-                    taco_no_chao = False
-                    tem_taco = True
-                    anim_time = 0
-                    frame = 0
-
-                    if ultima_direcao == 'down':
-                        animacao_atual = pegar_down_list
-                    elif ultima_direcao == 'up':
-                        animacao_atual = pegar_up_list
-                    elif ultima_direcao == 'left':
-                        animacao_atual = pegar_left_list
-                    elif ultima_direcao == 'right':
-                        animacao_atual = pegar_right_list
-
-        # Animação de morte com tecla L
-        if evento.type == KEYDOWN and evento.key == K_l:
-            if not morrer and not morto:
-                morrer = True
-                frame = 0
+            if not pegar and not atacar:
+                pegar = True
                 anim_time = 0
+                frame = 0
 
-                if ultima_direcao == 'right':
-                    animacao_atual = morte_right_list
+                if ultima_direcao == 'down':
+                    animacao_atual = pegar_down_list
+                elif ultima_direcao == 'up':
+                    animacao_atual = pegar_up_list
                 elif ultima_direcao == 'left':
-                    animacao_atual = morte_left_list
+                    animacao_atual = pegar_left_list
+                elif ultima_direcao == 'right':
+                    animacao_atual = pegar_right_list
 
-
+    # ===== ENTRADA DE TECLADO E MOVIMENTO =====
     teclas = pygame.key.get_pressed()
 
-    if not atacar and not pegar and not morrer and not morto:
+    if not atacar and not pegar:
         vel = velocidade_shift if teclas[K_LSHIFT] else velocidade
         mover = False
 
-        # Movimento
+        # Movimento horizontal
         dx = 0
         dy = 0
 
@@ -284,6 +218,8 @@ while True:
                 elif dx < 0:
                     jogador.left = parede.right
 
+        # Movimento vertical
+       
         # Aplicar movimento vertical com colisão
         jogador.y += dy
 
@@ -305,44 +241,35 @@ while True:
             elif ultima_direcao == "right":
                 animacao_atual = idle_right_list
 
-
+    # ===== ATUALIZAÇÃO DE ANIMAÇÃO =====
     anim_time += dt
 
     if anim_time >= 96:
+        frame += 1
         anim_time = 0
 
-        if morrer:
-            if frame < len(animacao_atual) - 1:
-                frame += 1
-            else:
-                morrer = False
-                morto = True
-                frame = len(animacao_atual) - 1
-        elif not morto:
-            frame += 1
+        if frame >= len(animacao_atual):
+            frame = 0
+            if atacar:
+                atacar = False
+            if pegar:
+                pegar = False
 
-            if frame >= len(animacao_atual):
-                frame = 0
-                if atacar:
-                    atacar = False
-                if pegar:
-                    pegar = False
+                # Retorna para idle após pegar
+                if ultima_direcao == 'down':
+                    animacao_atual = idle_down_list
+                elif ultima_direcao == 'up':
+                    animacao_atual = idle_up_list
+                elif ultima_direcao == 'left':
+                    animacao_atual = idle_left_list
+                elif ultima_direcao == 'right':
+                    animacao_atual = idle_right_list
 
-                    # Retorna para idle após pegar
-                    if ultima_direcao == 'down':
-                        animacao_atual = idle_down_list
-                    elif ultima_direcao == 'up':
-                        animacao_atual = idle_up_list
-                    elif ultima_direcao == 'left':
-                        animacao_atual = idle_left_list
-                    elif ultima_direcao == 'right':
-                        animacao_atual = idle_right_list
-
-
+    # ===== CÂMERA =====
     camera_x = jogador.centerx - (LARGURA // ZOOM) // 2
     camera_y = jogador.centery - (ALTURA // ZOOM) // 2
 
-
+    # ===== RENDERIZAÇÃO =====
     tela_jogo.fill((0, 0, 0))
 
     # Desenhar mapa
@@ -359,68 +286,24 @@ while True:
                         )
                     )
 
-    # Desenhar taco no chão (se ainda não foi pego)
-    if taco_no_chao:
-        tela_jogo.blit(
-            imagem_taco,
-            (
-                taco_rect.x - camera_x,
-                taco_rect.y - camera_y
-            )
-        )
-
     # Desenhar personagem animado
     sprite = animacao_atual[frame]
 
     offset_x = (sprite.get_width() - jogador.width) // 2
     offset_y = sprite.get_height() - jogador.height
 
-    pos_sprite = (
-        jogador.x - camera_x - offset_x,
-        jogador.y - camera_y - offset_y
+    tela_jogo.blit(
+        sprite,
+        (
+            jogador.x - camera_x - offset_x,
+            jogador.y - camera_y - offset_y
+        )
     )
 
-    # Calcular o sprite do taco (se aplicável) antes de decidir a ordem de desenho
-    taco_sprite = None
-    pos_taco = None
-    if tem_taco and not pegar and not morrer and not morto:
-        if atacar:
-            if ultima_direcao == 'down':
-                taco_sprite = taco_down_ataque_list[frame]
-            elif ultima_direcao == 'up':
-                taco_sprite = taco_up_ataque_list[frame]
-            elif ultima_direcao == 'left':
-                taco_sprite = taco_left_ataque_list[frame]
-            elif ultima_direcao == 'right':
-                taco_sprite = taco_right_ataque_list[frame]
-        else:
-            if ultima_direcao == 'down':
-                taco_sprite = taco_down_idle_list[frame]
-            elif ultima_direcao == 'up':
-                taco_sprite = taco_up_idle_list[frame]
-            elif ultima_direcao == 'left':
-                taco_sprite = taco_left_idle_list[frame]
-            elif ultima_direcao == 'right':
-                taco_sprite = taco_right_idle_list[frame]
+    # Debug: desenhar rect de colisão (comentado)
+    # pygame.draw.rect(tela_jogo, (255, 0, 0), (jogador.x - camera_x, jogador.y - camera_y, jogador.width, jogador.height), 1)
 
-        taco_offset_x = (taco_sprite.get_width() - jogador.width) // 2
-        taco_offset_y = taco_sprite.get_height() - jogador.height
-        pos_taco = (
-            jogador.x - camera_x - taco_offset_x,
-            jogador.y - camera_y - taco_offset_y
-        )
-
-    # Direção "up" (de costas): o taco fica ATRÁS do personagem
-    # Demais direções: o taco fica NA FRENTE do personagem
-    if taco_sprite is not None and ultima_direcao == 'up':
-        tela_jogo.blit(taco_sprite, pos_taco)
-        tela_jogo.blit(sprite, pos_sprite)
-    else:
-        tela_jogo.blit(sprite, pos_sprite)
-        if taco_sprite is not None:
-            tela_jogo.blit(taco_sprite, pos_taco)
-
-
+    # Aplicar zoom
     tela_zoom = pygame.transform.scale(
         tela_jogo,
         (LARGURA, ALTURA)
