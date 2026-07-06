@@ -104,6 +104,14 @@ zumbipeq_up_walk_list = []
 zumbipeq_left_walk_list = []
 zumbipeq_right_walk_list = []
 
+#efeitos visuais de dano (shot de "coracao" que aparece quando alguem leva hit)
+
+shot_vida = image.load('shot_1-Sheet3.png').convert_alpha()
+shot_vida2 = image.load('shot_2-Sheet3.png').convert_alpha()
+
+shotvida_list = []   # efeito de dano no JOGADOR
+shotvida2_list = []  # efeito de dano no ZUMBI
+
 
 for i in range(6):
 
@@ -153,6 +161,8 @@ for i in range(3):
     pegar_up_list.append(transform.scale(pegar_up.subsurface((i * 11, 0, 11, 15)), (50,70)))
     pegar_left_list.append(transform.scale(pegar_left.subsurface((i * 11, 0, 11, 16)), (50,70)))
     pegar_right_list.append(transform.scale(pegar_right.subsurface((i * 11, 0, 11, 16)), (50,70)))
+    shotvida_list.append(transform.scale(shot_vida.subsurface((i * 7, 0, 7, 6)), (30, 60)))
+    shotvida2_list.append(transform.scale(shot_vida2.subsurface((i * 6, 0, 6, 6)), (30, 60)))
 
 for i in range(7):
     morte_left_list.append(transform.scale(morte_left.subsurface((i * 21,0,21,16)), (70,70)))
@@ -192,6 +202,56 @@ zumbi_alcance_deteccao = 250
 zumbi_distancia_minima = 45
 
 
+vida_maxima = 3
+vida_atual = vida_maxima
+
+dano_cooldown = 0
+dano_cooldown_max = 1000 
+
+#vida do zumbi
+
+zumbi_vida_maxima = 3
+zumbi_vida_atual = zumbi_vida_maxima
+zumbi_vivo = True
+
+zumbi_dano_cooldown = 0
+zumbi_dano_cooldown_max = 500  
+
+zumbi_flash_timer = 0
+zumbi_flash_intervalo = 80
+zumbi_mostrar_vermelho = False
+
+golpe_aplicado = False  
+alcance_ataque = 70     
+
+
+efeitos_dano = []
+efeito_dano_intervalo = 96
+
+
+def criar_efeito_dano(x, y, lista_frames):
+    efeitos_dano.append({
+        "x": x,
+        "y": y,
+        "frames": lista_frames,
+        "frame_atual": 0,
+        "anim_time": 0
+    })
+
+
+def obter_sprite_vermelha(sprite, alpha=140):
+    vermelha = sprite.copy()
+    overlay = Surface(sprite.get_size(), SRCALPHA)
+    overlay.fill((255, 60, 60, 255))
+    vermelha.blit(overlay, (0, 0), special_flags=BLEND_RGBA_MULT)
+    vermelha.set_alpha(alpha)
+    return vermelha
+
+flash_timer = 0
+flash_intervalo = 100
+mostrar_vermelho = False
+
+
 velocidade = 2
 velocidade_shift = 4
 
@@ -210,6 +270,7 @@ while True:
                 atacar = True
                 anim_time = 0 
                 frame = 0 
+                golpe_aplicado = False
             
                 if ultima_direcao == 'down':
                     animacao_atual = soco_down_list
@@ -252,6 +313,7 @@ while True:
                 morrer = True
                 frame = 0 
                 anim_time = 0
+                animacao_taco = None
 
                 if ultima_direcao == 'right':
                     animacao_atual = morte_right_list
@@ -365,27 +427,32 @@ while True:
                     elif ultima_direcao == 'right':
                         animacao_atual = idle_right_list
     
-    
+
     dx = pos_x - zumbi_x
     dy = pos_y - zumbi_y
     distancia = (dx**2 + dy**2) ** 0.5
 
     zumbi_moveu = False
 
-    if distancia < zumbi_alcance_deteccao and distancia > zumbi_distancia_minima:
+    if zumbi_vivo and distancia < zumbi_alcance_deteccao and distancia > zumbi_distancia_minima:
         zumbi_moveu = True
 
-        dx /= distancia
-        dy /= distancia
+        dx_norm = dx / distancia
+        dy_norm = dy / distancia
 
-        zumbi_x += dx * zumbi_velocidade
-        zumbi_y += dy * zumbi_velocidade
+        zumbi_x += dx_norm * zumbi_velocidade
+        zumbi_y += dy_norm * zumbi_velocidade
 
-    
-        if abs(dx) > abs(dy):
-            zumbi_direcao = "right" if dx > 0 else "left"
-        else:
-            zumbi_direcao = "down" if dy > 0 else "up"
+        nova_direcao = zumbi_direcao
+        if abs(dx) > abs(dy) * 1.5:
+            nova_direcao = "right" if dx > 0 else "left"
+        elif abs(dy) > abs(dx) * 1.5:
+            nova_direcao = "down" if dy > 0 else "up"
+
+        if nova_direcao != zumbi_direcao:
+            zumbi_direcao = nova_direcao
+            zumbi_frame = 0
+            zumbi_anim_time = 0
 
         if zumbi_direcao == "down":
             zumbi_animacao_atual = zumbipeq_down_walk_list
@@ -412,11 +479,72 @@ while True:
         zumbi_frame += 1
         if zumbi_frame >= len(zumbi_animacao_atual):
             zumbi_frame = 0
-        
+
+    if zumbi_dano_cooldown > 0:
+        zumbi_dano_cooldown -= dt
+
+        zumbi_flash_timer += dt
+        if zumbi_flash_timer >= zumbi_flash_intervalo:
+            zumbi_flash_timer = 0
+            zumbi_mostrar_vermelho = not zumbi_mostrar_vermelho
+    else:
+        zumbi_mostrar_vermelho = False
+        zumbi_flash_timer = 0
+
+    if (atacar and not golpe_aplicado and zumbi_vivo
+            and distancia <= alcance_ataque and zumbi_dano_cooldown <= 0):
+        golpe_aplicado = True
+        zumbi_vida_atual -= 1
+        zumbi_dano_cooldown = zumbi_dano_cooldown_max
+        criar_efeito_dano(zumbi_x, zumbi_y - 20, shotvida2_list)
+
+        if zumbi_vida_atual <= 0:
+            zumbi_vivo = False
+
+    if dano_cooldown > 0:
+        dano_cooldown -= dt
+
+        flash_timer += dt
+        if flash_timer >= flash_intervalo:
+            flash_timer = 0
+            mostrar_vermelho = not mostrar_vermelho
+    else:
+        mostrar_vermelho = False
+        flash_timer = 0
+
+    if (zumbi_vivo and distancia <= zumbi_distancia_minima + 5
+            and dano_cooldown <= 0 and vida_atual > 0 and not morto):
+        vida_atual -= 1
+        dano_cooldown = dano_cooldown_max
+        criar_efeito_dano(pos_x, pos_y - 20, shotvida_list)
+
+        if vida_atual <= 0 and not morrer and not morto:
+            morrer = True
+            frame = 0
+            anim_time = 0
+            animacao_taco = None
+
+            if ultima_direcao == 'right':
+                animacao_atual = morte_right_list
+            elif ultima_direcao == 'left':
+                animacao_atual = morte_left_list
+
+    for efeito in efeitos_dano[:]:
+        efeito["anim_time"] += dt
+        if efeito["anim_time"] >= efeito_dano_intervalo:
+            efeito["anim_time"] = 0
+            efeito["frame_atual"] += 1
+
+            if efeito["frame_atual"] >= len(efeito["frames"]):
+                efeitos_dano.remove(efeito)
 
     screen.fill((73, 77, 74))
 
-    screen.blit(zumbi_animacao_atual[zumbi_frame], (zumbi_x, zumbi_y))
+    if zumbi_vivo:
+        if zumbi_mostrar_vermelho:
+            screen.blit(obter_sprite_vermelha(zumbi_animacao_atual[zumbi_frame]), (zumbi_x, zumbi_y))
+        else:
+            screen.blit(zumbi_animacao_atual[zumbi_frame], (zumbi_x, zumbi_y))
 
     draw_x = pos_x
     draw_y = pos_y
@@ -427,12 +555,18 @@ while True:
         # elif ultima_direcao == "right":
         #     draw_x += 10 
 
-    screen.blit(animacao_atual[frame], (draw_x, draw_y))
+    if mostrar_vermelho:
+        screen.blit(obter_sprite_vermelha(animacao_atual[frame]), (draw_x, draw_y))
+    else:
+        screen.blit(animacao_atual[frame], (draw_x, draw_y))
 
     if tem_taco and animacao_taco:
         screen.blit(animacao_taco[frame], (draw_x, draw_y))
     
     if taco_no_chao:
         screen.blit(imagem_taco, (taco_x, taco_y))
+
+    for efeito in efeitos_dano:
+        screen.blit(efeito["frames"][efeito["frame_atual"]], (efeito["x"], efeito["y"]))
 
     display.update()
