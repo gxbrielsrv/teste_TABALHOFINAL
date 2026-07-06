@@ -30,35 +30,78 @@ imagem_final = pygame.transform.scale(imagem_final, (LARGURA, ALTURA))
 area_final = pygame.Rect(1095, 190, 24, 24)
 som_porta = pygame.mixer.Sound("porta.wav")
 
-def mostrar_final():
-    tela.fill((0, 0, 0))
-    pygame.display.flip()
-
-    pygame.time.wait(500)
-    canal = som_porta.play()
-
-    while canal.get_busy():
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-        clock.tick(60)
-
-
-    pygame.time.wait(200)
-
+def tela_game_over():
+    botao_sair = pygame.Rect(0, 0, 360, 65)
+    botao_sair.center = (LARGURA // 2, ALTURA // 2 + 50)
 
     while True:
-
+        mouse_pos = pygame.mouse.get_pos()
         for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
+            if evento.type == QUIT:
+                salvar_jogo()
                 pygame.quit()
                 sys.exit()
 
-        tela.blit(imagem_final, (0, 0))
+            if evento.type == MOUSEBUTTONDOWN and evento.button == 1:
+                if botao_sair.collidepoint(evento.pos):
+                    return "sair"
+
+        tela.fill((10, 10, 15))
+
+        texto_fim = fonte_titulo_maior.render("FIM DE JOGO", True, COR_TITULO_VERMELHO)
+        sombra_fim = fonte_titulo_maior.render("FIM DE JOGO", True, COR_SOMBRA)
+        rect_fim = texto_fim.get_rect(center=(LARGURA // 2, ALTURA // 2 - 100))
+
+        tela.blit(sombra_fim, (rect_fim.x + 5, rect_fim.y + 5))
+        tela.blit(texto_fim, rect_fim)
+
+        desenhar_botao_menu(tela, botao_sair, "SAIR", mouse_pos)
 
         pygame.display.flip()
         clock.tick(60)
+
+def mostrar_final():
+    botao_sair = pygame.Rect(0, 0, 360, 65)
+    botao_sair.center = (LARGURA // 2, ALTURA - 100) # Posicionado na parte inferior
+
+    canal = som_porta.play()
+    
+
+    while True:
+        mouse_pos = pygame.mouse.get_pos()
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            if evento.type == MOUSEBUTTONDOWN and evento.button == 1:
+                if botao_sair.collidepoint(evento.pos):
+                    return "menu" # Retorna o comando para voltar ao menu
+
+        tela.blit(imagem_final, (0, 0))
+        
+        desenhar_botao_menu(tela, botao_sair, "MENU INICIAL", mouse_pos)
+        
+        pygame.display.flip()
+        clock.tick(60)
+
+def desenhar_hud_jogador(superficie, vida):
+    for i in range(8):
+
+        cor = (200, 0, 0) if i < vida else (50, 50, 50)
+        pygame.draw.rect(superficie, cor, (10 + (i * 25), 10, 20, 20))
+        pygame.draw.rect(superficie, (255, 255, 255), (10 + (i * 25), 10, 20, 20), 2)
+
+def desenhar_hud_zumbi(superficie, zumbi, camera_x, camera_y):
+    for i in range(5):
+        cor = (0, 200, 0) if i < zumbi["vida"] else (50, 50, 50)
+
+        x = zumbi["rect"].x - camera_x + (i * 4)
+        y = zumbi["rect"].y - camera_y - 8
+        pygame.draw.rect(superficie, cor, (x, y, 3, 3))
+
+
+
 def salvar_jogo():
     try:
         with open(ARQUIVO_SAVE, "w", encoding="utf-8") as arquivo:
@@ -71,6 +114,9 @@ def salvar_jogo():
             arquivo.write(f"taco_x={taco_rect.x}\n")
             arquivo.write(f"taco_y={taco_rect.y}\n")
             arquivo.write(f"morto={morto}\n")
+            arquivo.write(f"vida_jogador={vida_jogador}\n")
+            for i, zumbi in enumerate(lista_zumbis):
+                arquivo.write(f"zumbi_{i}_vivo={zumbi['vivo']}\n")
     except Exception as erro:
         print(f"[SAVE] Nao foi possivel salvar o jogo: {erro}")
 
@@ -88,7 +134,6 @@ def carregar_jogo():
         except Exception as erro:
             print(f"[SAVE] Nao foi possivel ler o save: {erro}")
     return dados_save
-
 
 # Colisoes
 paredes = []
@@ -108,23 +153,23 @@ run_right = pygame.image.load('Character_side_run-Sheet6.png')
 run_left = pygame.image.load('Character_side-left_run-Sheet6.png')
 run_up = pygame.image.load('Character_up_run-Sheet6.png')
 
-#Soco
+# Soco
 soco_down = pygame.image.load('Character_down_punch-Sheet4.png')
 soco_up = pygame.image.load('Character_up_punch-Sheet4.png')
 soco_left = pygame.image.load('Character_side-left_punch-Sheet4.png')
 soco_right = pygame.image.load('Character_side_punch-Sheet4.png')
 
-#Pegar
+# Pegar
 pegar_down = pygame.image.load('Character_down_Pick-up-Sheet3.png')
 pegar_up = pygame.image.load('Character_up_Pick-up-Sheet3.png')
 pegar_left = pygame.image.load('Character_side-left_Pick-up-Sheet3.png')
 pegar_right = pygame.image.load('Character_side_Pick-up-Sheet3.png')
 
-#Morrer
+# Morrer
 morte_right = pygame.image.load('Character_side_death3-Sheet6.png')
 morte_left = pygame.image.load('Character_side-left_death3-Sheet7.png')
 
-#Taco
+# Taco
 imagem_taco = pygame.image.load('bat.png')
 imagem_taco = pygame.transform.scale(imagem_taco, (16, 16))
 
@@ -138,41 +183,16 @@ taco_up_idle = pygame.image.load('Bat_up_idle-and-run-Sheet6.png')
 taco_right_idle = pygame.image.load('Bat_side_idle-and-run-Sheet6.png')
 taco_left_idle = pygame.image.load('Bat_side-left_idle-and-run-Sheet6.png')
 
-#Animaçoes
-idle_down_list = []
-idle_up_list = []
-idle_left_list = []
-idle_right_list = []
+# Animaçoes Jogador
+idle_down_list = []; idle_up_list = []; idle_left_list = []; idle_right_list = []
+run_down_list = []; run_up_list = []; run_left_list = []; run_right_list = []
+soco_down_list = []; soco_up_list = []; soco_left_list = []; soco_right_list = []
+pegar_down_list = []; pegar_up_list = []; pegar_left_list = []; pegar_right_list = []
+morte_right_list = []; morte_left_list = []
+taco_down_ataque_list = []; taco_up_ataque_list = []; taco_left_ataque_list = []; taco_right_ataque_list = []
+taco_down_idle_list = []; taco_up_idle_list = []; taco_left_idle_list = []; taco_right_idle_list = []
 
-run_down_list = []
-run_up_list = []
-run_left_list = []
-run_right_list = []
-
-soco_down_list = []
-soco_up_list = []
-soco_left_list = []
-soco_right_list = []
-
-pegar_down_list = []
-pegar_up_list = []
-pegar_left_list = []
-pegar_right_list = []
-
-morte_right_list = []
-morte_left_list = []
-
-taco_down_ataque_list = []
-taco_up_ataque_list = []
-taco_left_ataque_list = []
-taco_right_ataque_list = []
-
-taco_down_idle_list = []
-taco_up_idle_list = []
-taco_left_idle_list = []
-taco_right_idle_list = []
-
-#Idle e correr
+# Idle e correr
 for i in range(6):
     idle_down_list.append(pygame.transform.scale(idle_down.subsurface((i * 13, 0, 13, 16)), (16, 16)))
     run_down_list.append(pygame.transform.scale(run_down.subsurface((i * 13, 0, 13, 17)), (16, 16)))
@@ -187,7 +207,7 @@ for i in range(6):
     taco_left_idle_list.append(pygame.transform.scale(taco_left_idle.subsurface((i * 16, 0, 16, 13)), (16, 16)))
     taco_right_idle_list.append(pygame.transform.scale(taco_right_idle.subsurface((i * 16, 0, 16, 13)), (16, 16)))
 
-#Soco
+# Soco
 for i in range(4):
     soco_down_list.append(pygame.transform.scale(soco_down.subsurface((i * 12, 0, 12, 18)), (16, 16)))
     soco_up_list.append(pygame.transform.scale(soco_up.subsurface((i * 12, 0, 12, 17)), (16, 16)))
@@ -198,17 +218,67 @@ for i in range(4):
     taco_left_ataque_list.append(pygame.transform.scale(taco_left_ataque.subsurface((i * 28, 0, 28, 16)), (20, 20)))
     taco_right_ataque_list.append(pygame.transform.scale(taco_right_ataque.subsurface((i * 28, 0, 28, 16)), (20, 20)))
 
-#Pegar
+# Pegar
 for i in range(3):
     pegar_down_list.append(pygame.transform.scale(pegar_down.subsurface((i * 12, 0, 12, 16)), (16, 16)))
     pegar_up_list.append(pygame.transform.scale(pegar_up.subsurface((i * 11, 0, 11, 15)), (16, 16)))
     pegar_left_list.append(pygame.transform.scale(pegar_left.subsurface((i * 11, 0, 11, 16)), (16, 16)))
     pegar_right_list.append(pygame.transform.scale(pegar_right.subsurface((i * 11, 0, 11, 16)), (16, 16)))
 
-#Morte
+# Morte
 for i in range(7):
     morte_left_list.append(pygame.transform.scale(morte_left.subsurface((i * 21, 0, 21, 16)), (20, 20)))
     morte_right_list.append(pygame.transform.scale(morte_right.subsurface((i * 21, 0, 21, 16)), (20, 20)))
+
+# =====================================================================
+# CARREGAMENTO DOS ASSETS DOS ZUMBIS
+# =====================================================================
+try:
+    zumbipeq_down_idle = pygame.image.load('Zombie_Small_Down_Idle-Sheet6.png')
+    zumbipeq_up_idle = pygame.image.load('Zombie_Small_Up_Idle-Sheet6.png')
+    zumbipeq_left_idle = pygame.image.load('Zombie_Small_Side-left_Idle-Sheet6.png')
+    zumbipeq_right_idle = pygame.image.load('Zombie_Small_Side_Idle-Sheet6.png')
+
+    zumbipeq_down_walk = pygame.image.load('Zombie_Small_Down_walk-Sheet6.png')
+    zumbipeq_up_walk = pygame.image.load('Zombie_Small_Up_Walk-Sheet6.png')
+    zumbipeq_left_walk = pygame.image.load('Zombie_Small_Side-left_Walk-Sheet6.png')
+    zumbipeq_right_walk = pygame.image.load('Zombie_Small_Side_Walk-Sheet6.png')
+
+    zumbipeq_down_idle_list = []; zumbipeq_up_idle_list = []; zumbipeq_left_idle_list = []; zumbipeq_right_idle_list = []
+    zumbipeq_down_walk_list = []; zumbipeq_up_walk_list = []; zumbipeq_left_walk_list = []; zumbipeq_right_walk_list = []
+
+    for i in range(6):
+        zumbipeq_down_idle_list.append(pygame.transform.scale(zumbipeq_down_idle.subsurface((i * 13, 0, 13, 16)), (16, 16)))
+        zumbipeq_up_idle_list.append(pygame.transform.scale(zumbipeq_up_idle.subsurface((i * 13, 0, 13, 15)), (16, 16)))
+        zumbipeq_left_idle_list.append(pygame.transform.scale(zumbipeq_left_idle.subsurface((i * 11, 0, 11, 15)), (16, 16)))
+        zumbipeq_right_idle_list.append(pygame.transform.scale(zumbipeq_right_idle.subsurface((i * 11, 0, 11, 15)), (16, 16)))
+
+        zumbipeq_down_walk_list.append(pygame.transform.scale(zumbipeq_down_walk.subsurface((i * 12, 0, 12, 16)), (16, 16)))
+        zumbipeq_up_walk_list.append(pygame.transform.scale(zumbipeq_up_walk.subsurface((i * 13, 0, 13, 16)), (16, 16)))
+        zumbipeq_left_walk_list.append(pygame.transform.scale(zumbipeq_left_walk.subsurface((i * 13, 0, 13, 15)), (16, 16)))
+        zumbipeq_right_walk_list.append(pygame.transform.scale(zumbipeq_right_walk.subsurface((i * 13, 0, 13, 15)), (16, 16)))
+except Exception as e:
+    print(f"Aviso: Nao foi possivel carregar alguma imagem de zumbi ({e}). Usando superficies verdes.")
+    zumbipeq_down_idle_list = [pygame.Surface((16,16)) for _ in range(6)]
+    zumbipeq_up_idle_list = [pygame.Surface((16,16)) for _ in range(6)]
+    zumbipeq_left_idle_list = [pygame.Surface((16,16)) for _ in range(6)]
+    zumbipeq_right_idle_list = [pygame.Surface((16,16)) for _ in range(6)]
+    zumbipeq_down_walk_list = [pygame.Surface((16,16)) for _ in range(6)]
+    zumbipeq_up_walk_list = [pygame.Surface((16,16)) for _ in range(6)]
+    zumbipeq_left_walk_list = [pygame.Surface((16,16)) for _ in range(6)]
+    zumbipeq_right_walk_list = [pygame.Surface((16,16)) for _ in range(6)]
+    
+    for lista in [zumbipeq_down_idle_list, zumbipeq_up_idle_list, zumbipeq_left_idle_list, zumbipeq_right_idle_list, zumbipeq_down_walk_list, zumbipeq_up_walk_list, zumbipeq_left_walk_list, zumbipeq_right_walk_list]:
+        for s in lista: s.fill((20, 150, 20))
+
+# Função para Efeito de Dano (Flash Vermelho)
+def obter_sprite_vermelha(sprite, alpha=140):
+    vermelha = sprite.copy()
+    overlay = pygame.Surface(sprite.get_size(), pygame.SRCALPHA)
+    overlay.fill((255, 60, 60, 255))
+    vermelha.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+    vermelha.set_alpha(alpha)
+    return vermelha
 
 # Fontes 
 pygame.font.init()
@@ -228,30 +298,22 @@ COR_TITULO_VERMELHO = (190, 40, 40)
 COR_BOTAO_BG = (50, 75, 100)
 COR_BOTAO_HOVER = (65, 95, 120)
 COR_BOTAO_BORDA = (20, 20, 25)
-COR_BOTAO_DETALHE = (180, 80, 80) # As braçadeiras laterais
+COR_BOTAO_DETALHE = (180, 80, 80) 
 COR_CAVEIRA = (200, 60, 150)
 COR_BOTAO_DESABILITADO = (40, 50, 60)
 COR_SOMBRA = (10, 10, 15)
 
 def desenhar_caveira_pixelada(superficie, x, y, cor):
-    """Desenha uma caveira estilo pixel art usando retângulos (substituto da imagem)"""
-    # Crânio
     pygame.draw.rect(superficie, cor, (x - 8, y - 8, 16, 12))
-    # Maxilar
     pygame.draw.rect(superficie, cor, (x - 5, y + 4, 10, 5))
-    # Olhos 
     pygame.draw.rect(superficie, COR_SOMBRA, (x - 6, y - 3, 4, 4))
     pygame.draw.rect(superficie, COR_SOMBRA, (x + 2, y - 3, 4, 4))
-    # Nariz
     pygame.draw.rect(superficie, COR_SOMBRA, (x - 1, y + 1, 2, 3))
-    # Dentes 
     pygame.draw.line(superficie, COR_SOMBRA, (x - 2, y + 5), (x - 2, y + 8), 1)
     pygame.draw.line(superficie, COR_SOMBRA, (x + 1, y + 5), (x + 1, y + 8), 1)
 
 def desenhar_botao_menu(superficie, rect, texto, mouse_pos, habilitado=True):
     hover = rect.collidepoint(mouse_pos) if habilitado else False
-    
-    # Cores 
     bg_color = COR_BOTAO_HOVER if hover else COR_BOTAO_BG
     if not habilitado:
         bg_color = COR_BOTAO_DESABILITADO
@@ -285,7 +347,6 @@ def desenhar_botao_menu(superficie, rect, texto, mouse_pos, habilitado=True):
 
 def renderizar_fundo_sombrio(superficie):
     for layer in MapaOriginal.visible_layers:
-        
         if hasattr(layer, "data"):
             for x, y, gid in layer:
                 tile = MapaOriginal.get_tile_image_by_gid(gid)
@@ -294,28 +355,21 @@ def renderizar_fundo_sombrio(superficie):
                     superficie.blit(tile_zoom, (x * int(16 * ZOOM), y * int(16 * ZOOM)))
     
     overlay = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
-    overlay.fill((10, 20, 25, 210)) # Teal muito escuro e quase opaco
+    overlay.fill((10, 20, 25, 210))
     superficie.blit(overlay, (0, 0))
 
 def desenhar_titulo_jogo(superficie):
-    """Renderiza o titulo estilizado 'INTO THE EPIDEMIC'"""
     centro_x = LARGURA // 2
-    
-    # "INTO THE"
     texto_into = fonte_titulo_menor.render("INTO THE", True, COR_TITULO_BRANCO)
     sombra_into = fonte_titulo_menor.render("INTO THE", True, COR_SOMBRA)
     rect_into = texto_into.get_rect(center=(centro_x, 120))
     superficie.blit(sombra_into, (rect_into.x + 4, rect_into.y + 4))
     superficie.blit(texto_into, rect_into)
 
-    # "EPIDEMIC" dividido para ter o D em vermelho
-    # EPI
     texto_epi = fonte_titulo_maior.render("EPI", True, COR_TITULO_VERDE)
     sombra_epi = fonte_titulo_maior.render("EPI", True, COR_SOMBRA)
-    # D
     texto_d = fonte_titulo_maior.render("D", True, COR_TITULO_VERMELHO)
     sombra_d = fonte_titulo_maior.render("D", True, COR_SOMBRA)
-    # EMIC
     texto_emic = fonte_titulo_maior.render("EMIC", True, COR_TITULO_VERDE)
     sombra_emic = fonte_titulo_maior.render("EMIC", True, COR_SOMBRA)
 
@@ -323,17 +377,14 @@ def desenhar_titulo_jogo(superficie):
     inicio_x = centro_x - (largura_total // 2)
     y_epidemic = 170
 
-    # EPI
     superficie.blit(sombra_epi, (inicio_x + 5, y_epidemic + 5))
     superficie.blit(texto_epi, (inicio_x, y_epidemic))
     inicio_x += texto_epi.get_width()
     
-    # D
     superficie.blit(sombra_d, (inicio_x + 5, y_epidemic + 5))
     superficie.blit(texto_d, (inicio_x, y_epidemic))
     inicio_x += texto_d.get_width()
 
-    # EMIC
     superficie.blit(sombra_emic, (inicio_x + 5, y_epidemic + 5))
     superficie.blit(texto_emic, (inicio_x, y_epidemic))
 
@@ -385,15 +436,13 @@ def tela_menu_principal():
 
 def tela_pausa():
     fundo_pausa = tela.copy()
-
     overlay = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
-    overlay.fill((10, 20, 25, 200)) # Mantém a paleta escura da imagem
+    overlay.fill((10, 20, 25, 200))
 
     botao_continuar_pausa = pygame.Rect(0, 0, 360, 65)
     botao_sair_pausa = pygame.Rect(0, 0, 360, 65)
     botao_continuar_pausa.center = (LARGURA // 2, ALTURA // 2 - 20)
     botao_sair_pausa.center = (LARGURA // 2, ALTURA // 2 + 70)
-
 
     titulo_pausa = fonte_titulo_maior.render("PAUSADO", True, COR_TITULO_BRANCO)
     sombra_pausa = fonte_titulo_maior.render("PAUSADO", True, COR_SOMBRA)
@@ -423,7 +472,7 @@ def tela_pausa():
         tela.blit(titulo_pausa, titulo_pausa_rect)
 
         desenhar_botao_menu(tela, botao_continuar_pausa, "CONTINUAR", mouse_pos)
-        desenhar_botao_menu(tela, botao_sair_pausa, "SAIR", mouse_pos)
+        desenhar_botao_menu(tela, botao_sair_pausa, "SAIR E SALVAR", mouse_pos)
 
         pygame.display.flip()
         clock.tick(60)
@@ -433,7 +482,6 @@ while True:
 
     velocidade = 1
     velocidade_shift = 1.6
-
     mensagem_cama_ativa = True
 
     if opcao_menu == "continuar" :
@@ -444,12 +492,19 @@ while True:
     except:
         fonte_mensagem_cama = pygame.font.Font(None, 28)
   
-    
     jogador = pygame.Rect(95, 280, 16, 16)
     taco_rect = pygame.Rect(450, 270, 16, 16)
     taco_no_chao = True
     tem_taco = False
     perto_do_taco = False
+
+    # Status do Jogador
+    vida_jogador = 8
+    dano_cooldown_jogador = 0
+    dano_cooldown_max = 1000
+    mostrar_vermelho_jogador = False
+    flash_timer_jogador = 0
+    alcance_ataque_jogador = 25
 
     # Estado de animação
     animacao_atual = idle_right_list
@@ -462,14 +517,35 @@ while True:
     morto = False
     morrer = False
 
-    velocidade = 1
-    velocidade_shift = 1.6
+    # =====================================================================
+    # CONFIGURAÇÃO DE SPAWN DOS ZUMBIS E ATRIBUTOS
+    # =====================================================================
+    def criar_zumbi(x, y, velocidade, alcance_deteccao):
+        return {
+            "rect": pygame.Rect(x, y, 16, 16),
+            "velocidade": velocidade,
+            "alcance_deteccao": alcance_deteccao,
+            "direcao": "down",
+            "movendo": False,
+            "frame": 0,
+            "anim_time": 0,
+            "vivo": True,
+            "vida": 5,
+            "dano_cooldown": 0,
+            "flash_timer": 0,
+            "mostrar_vermelho": False
+        }
+
+    # Adicionar zumbis 
+    lista_zumbis = [criar_zumbi(x=430, y=50, velocidade=0.6, alcance_deteccao=40),
+        criar_zumbi(x=720, y=60, velocidade=0.6, alcance_deteccao=70),
+        criar_zumbi(x=860, y=220, velocidade=0.6, alcance_deteccao=70),
+        criar_zumbi(x=1060, y=220, velocidade=0.6, alcance_deteccao=70)]
 
     if opcao_menu == "novo":
         salvar_jogo()
     elif opcao_menu == "continuar":
         dados_save = carregar_jogo()
-
         if dados_save:
             try:
                 jogador.x = int(dados_save.get("pos_x", jogador.x))
@@ -480,32 +556,29 @@ while True:
                 taco_rect.x = int(dados_save.get("taco_x", taco_rect.x))
                 taco_rect.y = int(dados_save.get("taco_y", taco_rect.y))
                 morto = dados_save.get("morto", str(morto)) == "True"
+                vida_jogador = int(dados_save.get("vida_jogador", 8))
+                for i, zumbi in enumerate(lista_zumbis):
+                    status_str = dados_save.get(f"zumbi_{i}_vivo", "True")
+                    zumbi["vivo"] = (status_str == "True")
+                
 
                 if morto:
-                    if ultima_direcao == "left":
-                        animacao_atual = morte_left_list
-                    else:
-                        animacao_atual = morte_right_list
+                    if ultima_direcao == "left": animacao_atual = morte_left_list
+                    else: animacao_atual = morte_right_list
                     frame = len(animacao_atual) - 1
-                elif ultima_direcao == "down":
-                    animacao_atual = idle_down_list
-                elif ultima_direcao == "up":
-                    animacao_atual = idle_up_list
-                elif ultima_direcao == "left":
-                    animacao_atual = idle_left_list
-                elif ultima_direcao == "right":
-                    animacao_atual = idle_right_list
+                elif ultima_direcao == "down": animacao_atual = idle_down_list
+                elif ultima_direcao == "up": animacao_atual = idle_up_list
+                elif ultima_direcao == "left": animacao_atual = idle_left_list
+                elif ultima_direcao == "right": animacao_atual = idle_right_list
             except (ValueError, TypeError) as erro:
                 print(f"[SAVE] Save invalido, iniciando um novo jogo: {erro}")
         else:
             print("[SAVE] Nenhum save encontrado, iniciando um novo jogo.")
 
-
     rodando_jogo = True
 
     while rodando_jogo:
         dt = clock.tick(60)
-
         perto_do_taco = (abs(jogador.centerx - taco_rect.centerx) < 20 and abs(jogador.centery - taco_rect.centery) < 20)
 
         for evento in pygame.event.get():
@@ -530,14 +603,23 @@ while True:
                     anim_time = 0
                     frame = 0
 
-                    if ultima_direcao == 'down':
-                        animacao_atual = soco_down_list
-                    elif ultima_direcao == 'up':
-                        animacao_atual = soco_up_list
-                    elif ultima_direcao == 'left':
-                        animacao_atual = soco_left_list
-                    elif ultima_direcao == 'right':
-                        animacao_atual = soco_right_list
+                    if ultima_direcao == 'down': animacao_atual = soco_down_list
+                    elif ultima_direcao == 'up': animacao_atual = soco_up_list
+                    elif ultima_direcao == 'left': animacao_atual = soco_left_list
+                    elif ultima_direcao == 'right': animacao_atual = soco_right_list
+                    
+                    for zumbi in lista_zumbis:
+                        if zumbi["vivo"] and zumbi["dano_cooldown"] <= 0:
+                            dist = math.hypot(jogador.centerx - zumbi["rect"].centerx, jogador.centery - zumbi["rect"].centery)
+                            if dist <= alcance_ataque_jogador:
+                                if tem_taco == False:
+                                    zumbi["vida"] -= 1
+                                    zumbi["dano_cooldown"] = 500
+                                elif tem_taco == True:
+                                    zumbi["vida"] -= 2
+                                    zumbi["dano_cooldown"] = 500
+                                if zumbi["vida"] <= 0:
+                                    zumbi["vivo"] = False
 
             if evento.type == KEYDOWN and evento.key == K_e:
                 if not pegar and not atacar and not morrer and not morto:
@@ -548,17 +630,15 @@ while True:
                         anim_time = 0
                         frame = 0
 
-                        if ultima_direcao == 'down':
-                            animacao_atual = pegar_down_list
-                        elif ultima_direcao == 'up':
-                            animacao_atual = pegar_up_list
-                        elif ultima_direcao == 'left':
-                            animacao_atual = pegar_left_list
-                        elif ultima_direcao == 'right':
-                            animacao_atual = pegar_right_list
+                        if ultima_direcao == 'down': animacao_atual = pegar_down_list
+                        elif ultima_direcao == 'up': animacao_atual = pegar_up_list
+                        elif ultima_direcao == 'left': animacao_atual = pegar_left_list
+                        elif ultima_direcao == 'right': animacao_atual = pegar_right_list
                 
                 if jogador.colliderect(area_final):
-                    mostrar_final()
+                    acao = mostrar_final()
+                    if acao == "menu":
+                        rodando_jogo = False
 
             if evento.type == KEYDOWN and evento.key == K_l:
                 if not morrer and not morto:
@@ -566,10 +646,8 @@ while True:
                     frame = 0
                     anim_time = 0
 
-                    if ultima_direcao == 'right':
-                        animacao_atual = morte_right_list
-                    elif ultima_direcao == 'left':
-                        animacao_atual = morte_left_list
+                    if ultima_direcao == 'right': animacao_atual = morte_right_list
+                    elif ultima_direcao == 'left': animacao_atual = morte_left_list
 
         if not rodando_jogo:
             break
@@ -579,26 +657,12 @@ while True:
         if not atacar and not pegar and not morrer and not morto:
             vel = velocidade_shift if teclas[K_LSHIFT] else velocidade
             mover = False
+            dx = 0; dy = 0
 
-            dx = 0
-            dy = 0
-
-            if teclas[K_a]:
-                dx -= 1
-                animacao_atual = run_left_list
-                ultima_direcao = 'left'
-            if teclas[K_d]:
-                dx += 1
-                animacao_atual = run_right_list
-                ultima_direcao = 'right'
-            if teclas[K_w]:
-                dy -= 1
-                animacao_atual = run_up_list
-                ultima_direcao = 'up'
-            if teclas[K_s]:
-                dy += 1
-                animacao_atual = run_down_list
-                ultima_direcao = 'down'
+            if teclas[K_a]: dx -= 1; animacao_atual = run_left_list; ultima_direcao = 'left'
+            if teclas[K_d]: dx += 1; animacao_atual = run_right_list; ultima_direcao = 'right'
+            if teclas[K_w]: dy -= 1; animacao_atual = run_up_list; ultima_direcao = 'up'
+            if teclas[K_s]: dy += 1; animacao_atual = run_down_list; ultima_direcao = 'down'
                 
             if dx != 0 or dy != 0:
                 tamanho = math.sqrt(dx * dx + dy * dy)
@@ -611,31 +675,88 @@ while True:
             jogador.x += dx
             for parede in paredes:
                 if jogador.colliderect(parede):
-                    if dx > 0:
-                        jogador.right = parede.left
-                    elif dx < 0:
-                        jogador.left = parede.right
+                    if dx > 0: jogador.right = parede.left
+                    elif dx < 0: jogador.left = parede.right
 
             jogador.y += dy
             for parede in paredes:
                 if jogador.colliderect(parede):
-                    if dy > 0:
-                        jogador.bottom = parede.top
-                    elif dy < 0:
-                        jogador.top = parede.bottom
+                    if dy > 0: jogador.bottom = parede.top
+                    elif dy < 0: jogador.top = parede.bottom
 
             if not mover:
-                if ultima_direcao == "down":
-                    animacao_atual = idle_down_list
-                elif ultima_direcao == "up":
-                    animacao_atual = idle_up_list
-                elif ultima_direcao == "left":
-                    animacao_atual = idle_left_list
-                elif ultima_direcao == "right":
-                    animacao_atual = idle_right_list
+                if ultima_direcao == "down": animacao_atual = idle_down_list
+                elif ultima_direcao == "up": animacao_atual = idle_up_list
+                elif ultima_direcao == "left": animacao_atual = idle_left_list
+                elif ultima_direcao == "right": animacao_atual = idle_right_list
 
+        if dano_cooldown_jogador > 0:
+            dano_cooldown_jogador -= dt
+            flash_timer_jogador += dt
+            if flash_timer_jogador >= 80:
+                flash_timer_jogador = 0
+                mostrar_vermelho_jogador = not mostrar_vermelho_jogador
+        else:
+            mostrar_vermelho_jogador = False
+
+        for zumbi in lista_zumbis:
+            if not zumbi["vivo"]:
+                continue
+
+            if zumbi["dano_cooldown"] > 0:
+                zumbi["dano_cooldown"] -= dt
+                zumbi["flash_timer"] += dt
+                if zumbi["flash_timer"] >= 80:
+                    zumbi["flash_timer"] = 0
+                    zumbi["mostrar_vermelho"] = not zumbi["mostrar_vermelho"]
+            else:
+                zumbi["mostrar_vermelho"] = False
+
+            dx_z = jogador.centerx - zumbi["rect"].centerx
+            dy_z = jogador.centery - zumbi["rect"].centery
+            distancia = math.hypot(dx_z, dy_z)
+
+            zumbi["movendo"] = False
+
+            if distancia <= 15 and not morto and dano_cooldown_jogador <= 0:
+                vida_jogador -= 1
+                dano_cooldown_jogador = dano_cooldown_max
+                if vida_jogador <= 0 and not morrer and not morto:
+                    morrer = True
+                    frame = 0
+                    anim_time = 0
+                    if ultima_direcao == 'right': animacao_atual = morte_right_list
+                    elif ultima_direcao == 'left': animacao_atual = morte_left_list
+
+            elif 14 < distancia <= zumbi["alcance_deteccao"] and not morto:
+                zumbi["movendo"] = True
+                dx_norm = dx_z / distancia
+                dy_norm = dy_z / distancia
+
+                zumbi["rect"].x += dx_norm * zumbi["velocidade"]
+                for parede in paredes:
+                    if zumbi["rect"].colliderect(parede):
+                        if dx_norm > 0: zumbi["rect"].right = parede.left
+                        elif dx_norm < 0: zumbi["rect"].left = parede.right
+
+                zumbi["rect"].y += dy_norm * zumbi["velocidade"]
+                for parede in paredes:
+                    if zumbi["rect"].colliderect(parede):
+                        if dy_norm > 0: zumbi["rect"].bottom = parede.top
+                        elif dy_norm < 0: zumbi["rect"].top = parede.bottom
+
+      
+                if abs(dx_z) > abs(dy_z) * 1.5:
+                    zumbi["direcao"] = "right" if dx_z > 0 else "left"
+                elif abs(dy_z) > abs(dx_z) * 1.5:
+                    zumbi["direcao"] = "down" if dy_z > 0 else "up"
+
+            if zumbi["anim_time"] >= 96:
+                zumbi["anim_time"] = 0
+                zumbi["frame"] = (zumbi["frame"] + 1) % 6
+
+        # Atualização do Jogador
         anim_time += dt
-
         if anim_time >= 96:
             anim_time = 0
             if morrer:
@@ -649,55 +770,47 @@ while True:
                 frame += 1
                 if frame >= len(animacao_atual):
                     frame = 0
-                    if atacar:
-                        atacar = False
+                    if atacar: atacar = False
                     if pegar:
                         pegar = False
-                        if ultima_direcao == 'down':
-                            animacao_atual = idle_down_list
-                        elif ultima_direcao == 'up':
-                            animacao_atual = idle_up_list
-                        elif ultima_direcao == 'left':
-                            animacao_atual = idle_left_list
-                        elif ultima_direcao == 'right':
-                            animacao_atual = idle_right_list
+                        if ultima_direcao == 'down': animacao_atual = idle_down_list
+                        elif ultima_direcao == 'up': animacao_atual = idle_up_list
+                        elif ultima_direcao == 'left': animacao_atual = idle_left_list
+                        elif ultima_direcao == 'right': animacao_atual = idle_right_list
 
         camera_x = jogador.centerx - (LARGURA // ZOOM) // 2
         camera_y = jogador.centery - (ALTURA // ZOOM) // 2
 
         tela_jogo.fill((0, 0, 0))
-        sprite = animacao_atual[frame]
+        
+        sprite_base = animacao_atual[frame]
+        if mostrar_vermelho_jogador:
+            sprite = obter_sprite_vermelha(sprite_base)
+        else:
+            sprite = sprite_base
 
         offset_x = (sprite.get_width() - jogador.width) // 2
         offset_y = sprite.get_height() - jogador.height
-
-        pos_sprite = (jogador.x - camera_x - offset_x,jogador.y - camera_y - offset_y)
+        pos_sprite = (jogador.x - camera_x - offset_x, jogador.y - camera_y - offset_y)
 
         taco_sprite = None
         pos_taco = None
         if tem_taco and not pegar and not morrer and not morto:
             if atacar:
-                if ultima_direcao == 'down':
-                    taco_sprite = taco_down_ataque_list[frame]
-                elif ultima_direcao == 'up':
-                    taco_sprite = taco_up_ataque_list[frame]
-                elif ultima_direcao == 'left':
-                    taco_sprite = taco_left_ataque_list[frame]
-                elif ultima_direcao == 'right':
-                    taco_sprite = taco_right_ataque_list[frame]
+                if ultima_direcao == 'down': taco_sprite = taco_down_ataque_list[frame]
+                elif ultima_direcao == 'up': taco_sprite = taco_up_ataque_list[frame]
+                elif ultima_direcao == 'left': taco_sprite = taco_left_ataque_list[frame]
+                elif ultima_direcao == 'right': taco_sprite = taco_right_ataque_list[frame]
             else:
-                if ultima_direcao == 'down':
-                    taco_sprite = taco_down_idle_list[frame]
-                elif ultima_direcao == 'up':
-                    taco_sprite = taco_up_idle_list[frame]
-                elif ultima_direcao == 'left':
-                    taco_sprite = taco_left_idle_list[frame]
-                elif ultima_direcao == 'right':
-                    taco_sprite = taco_right_idle_list[frame]
+                if ultima_direcao == 'down': taco_sprite = taco_down_idle_list[frame]
+                elif ultima_direcao == 'up': taco_sprite = taco_up_idle_list[frame]
+                elif ultima_direcao == 'left': taco_sprite = taco_left_idle_list[frame]
+                elif ultima_direcao == 'right': taco_sprite = taco_right_idle_list[frame]
 
             taco_offset_x = (taco_sprite.get_width() - jogador.width) // 2
             taco_offset_y = taco_sprite.get_height() - jogador.height
             pos_taco = (jogador.x - camera_x - taco_offset_x, jogador.y - camera_y - taco_offset_y)
+        
         for layer in MapaOriginal.visible_layers:
             if hasattr(layer, "data"):
                 for x, y, gid in layer:
@@ -706,27 +819,55 @@ while True:
                         tela_jogo.blit(tile, (x * TILE - camera_x, y * TILE - camera_y))
 
             if layer.name == "JOGADOR":
-
-                if taco_sprite is not None and ultima_direcao == "up":
-                    tela_jogo.blit(taco_sprite, pos_taco)
-
+                if taco_sprite is not None and ultima_direcao == "up": tela_jogo.blit(taco_sprite, pos_taco)
                 tela_jogo.blit(sprite, pos_sprite)
+                if taco_sprite is not None and ultima_direcao != "up": tela_jogo.blit(taco_sprite, pos_taco)
 
-                if taco_sprite is not None and ultima_direcao != "up":
-                    tela_jogo.blit(taco_sprite, pos_taco)
 
+                for zumbi in lista_zumbis:
+                    if zumbi["vivo"]:
+                        if zumbi["movendo"]:
+                            if zumbi["direcao"] == "down": anim_z = zumbipeq_down_walk_list
+                            elif zumbi["direcao"] == "up": anim_z = zumbipeq_up_walk_list
+                            elif zumbi["direcao"] == "left": anim_z = zumbipeq_left_walk_list
+                            else: anim_z = zumbipeq_right_walk_list
+                        else:
+                            if zumbi["direcao"] == "down": anim_z = zumbipeq_down_idle_list
+                            elif zumbi["direcao"] == "up": anim_z = zumbipeq_up_idle_list
+                            elif zumbi["direcao"] == "left": anim_z = zumbipeq_left_idle_list
+                            else: anim_z = zumbipeq_right_idle_list
+
+                        zumbi_sprite_base = anim_z[zumbi["frame"]]
+                        
+                        
+                        if zumbi["mostrar_vermelho"]:
+                            zumbi_sprite = obter_sprite_vermelha(zumbi_sprite_base)
+                        else:
+                            zumbi_sprite = zumbi_sprite_base
+
+                        z_offset_x = (zumbi_sprite.get_width() - zumbi["rect"].width) // 2
+                        z_offset_y = zumbi_sprite.get_height() - zumbi["rect"].height
+                        z_pos = (zumbi["rect"].x - camera_x - z_offset_x, zumbi["rect"].y - camera_y - z_offset_y)
+                        
+                        tela_jogo.blit(zumbi_sprite, z_pos)
 
         if taco_no_chao:
             tela_jogo.blit(imagem_taco, (taco_rect.x - camera_x, taco_rect.y - camera_y))
 
-        sprite = animacao_atual[frame]
-        offset_x = (sprite.get_width() - jogador.width) // 2
-        offset_y = sprite.get_height() - jogador.height
-        pos_sprite = (jogador.x - camera_x - offset_x, jogador.y - camera_y - offset_y)
+        tela_zoom = pygame.transform.scale(tela_jogo, (LARGURA, ALTURA))
+        tela.blit(tela_zoom, (0, 0))
+
+        for zumbi in lista_zumbis:
+            if zumbi["vivo"]:
+                desenhar_hud_zumbi(tela_jogo, zumbi, camera_x, camera_y)
 
         tela_zoom = pygame.transform.scale(tela_jogo, (LARGURA, ALTURA))
         tela.blit(tela_zoom, (0, 0))
-        tela.blit(tela_zoom, (0, 0))
+
+        if morto:
+            acao = tela_game_over()
+            if acao == "sair":
+                rodando_jogo = False 
 
         if mensagem_cama_ativa:
             texto_cama = "APERTE 'S' PARA LEVANTAR DA CAMA"
@@ -735,7 +876,9 @@ while True:
             rect_txt = branco_txt.get_rect(center=(LARGURA // 2, ALTURA - 60))
 
             tela.blit(sombra_txt, (rect_txt.x + 3, rect_txt.y + 3))
-            tela.blit(branco_txt, rect_txt)
+            tela.blit(branco_txt, rect_txt)     
 
         
+        desenhar_hud_jogador(tela, vida_jogador)
+
         pygame.display.flip()
