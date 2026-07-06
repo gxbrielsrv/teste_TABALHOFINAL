@@ -24,6 +24,41 @@ TILE = 16
 
 ARQUIVO_SAVE = "save.txt"
 
+# Final do jogo
+imagem_final = pygame.image.load("final_casa.png")
+imagem_final = pygame.transform.scale(imagem_final, (LARGURA, ALTURA))
+area_final = pygame.Rect(1095, 190, 24, 24)
+som_porta = pygame.mixer.Sound("porta.wav")
+
+def mostrar_final():
+    tela.fill((0, 0, 0))
+    pygame.display.flip()
+
+    pygame.time.wait(500)
+    canal = som_porta.play()
+
+    while canal.get_busy():
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        clock.tick(60)
+
+
+    pygame.time.wait(200)
+
+
+    while True:
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        tela.blit(imagem_final, (0, 0))
+
+        pygame.display.flip()
+        clock.tick(60)
 def salvar_jogo():
     try:
         with open(ARQUIVO_SAVE, "w", encoding="utf-8") as arquivo:
@@ -249,7 +284,6 @@ def desenhar_botao_menu(superficie, rect, texto, mouse_pos, habilitado=True):
     superficie.blit(texto_render, texto_rect)
 
 def renderizar_fundo_sombrio(superficie):
-    """Renderiza o mapa original ao fundo com um filtro escuro por cima para simular a imagem"""
     for layer in MapaOriginal.visible_layers:
         
         if hasattr(layer, "data"):
@@ -367,7 +401,6 @@ def tela_pausa():
 
     while True:
         mouse_pos = pygame.mouse.get_pos()
-
         for evento in pygame.event.get():
             if evento.type == QUIT:
                 salvar_jogo()
@@ -386,7 +419,6 @@ def tela_pausa():
         tela.blit(fundo_pausa, (0, 0))
         tela.blit(overlay, (0, 0))
         
-        # Desenha pausa
         tela.blit(sombra_pausa, (titulo_pausa_rect.x + 5, titulo_pausa_rect.y + 5))
         tela.blit(titulo_pausa, titulo_pausa_rect)
 
@@ -412,7 +444,7 @@ while True:
     except:
         fonte_mensagem_cama = pygame.font.Font(None, 28)
   
-
+    
     jogador = pygame.Rect(95, 280, 16, 16)
     taco_rect = pygame.Rect(450, 270, 16, 16)
     taco_no_chao = True
@@ -524,6 +556,9 @@ while True:
                             animacao_atual = pegar_left_list
                         elif ultima_direcao == 'right':
                             animacao_atual = pegar_right_list
+                
+                if jogador.colliderect(area_final):
+                    mostrar_final()
 
             if evento.type == KEYDOWN and evento.key == K_l:
                 if not morrer and not morto:
