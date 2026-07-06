@@ -28,7 +28,17 @@ ARQUIVO_SAVE = "save.txt"
 imagem_final = pygame.image.load("final_casa.png")
 imagem_final = pygame.transform.scale(imagem_final, (LARGURA, ALTURA))
 area_final = pygame.Rect(1095, 190, 24, 24)
-som_porta = pygame.mixer.Sound("porta.wav")\
+som_porta = pygame.mixer.Sound("porta.wav")
+som_porta2 = pygame.mixer.Sound("som_porta2.wav")
+som_porta2.set_volume(0.1)
+som_taco = pygame.mixer.Sound('somtaco.wav')
+som_taco.set_volume(0.2)
+som_vida = pygame.mixer.Sound('somvida.wav')
+som_vida.set_volume(0.2)
+som_soco = pygame.mixer.Sound('somsoco.wav')
+som_soco.set_volume(0.2)
+
+
 
 area_teleporte = pygame.Rect(48, 210, 18, 18) 
 destino_x = 48  
@@ -635,6 +645,8 @@ while True:
                     rodando_jogo = False
 
             if evento.type == MOUSEBUTTONDOWN and evento.button == 1:
+                if tem_taco ==True:
+                    som_taco.play()
                 if not atacar and not pegar and not morrer and not morto and not mensagem_cama_ativa:
                     atacar = True
                     anim_time = 0
@@ -644,6 +656,7 @@ while True:
                     elif ultima_direcao == 'up': animacao_atual = soco_up_list
                     elif ultima_direcao == 'left': animacao_atual = soco_left_list
                     elif ultima_direcao == 'right': animacao_atual = soco_right_list
+
                     
                     for zumbi in lista_zumbis:
                         if zumbi["vivo"] and zumbi["dano_cooldown"] <= 0:
@@ -652,9 +665,11 @@ while True:
                                 if tem_taco == False:
                                     zumbi["vida"] -= 1
                                     zumbi["dano_cooldown"] = 500
+                                    som_soco.play()
                                 elif tem_taco == True:
                                     zumbi["vida"] -= 2
                                     zumbi["dano_cooldown"] = 500
+                                    som_taco.play()
                                 if zumbi["vida"] <= 0:
                                     zumbi["vivo"] = False
 
@@ -682,36 +697,44 @@ while True:
                     if jogador.colliderect(area_teleporte):
                         jogador.x = destino_x
                         jogador.y = destino_y
+                        som_porta2.play()
+
                 
                 if not morto and not morrer:
                     if jogador.colliderect(area_teleporte2):
                         jogador.x = destino_x2
                         jogador.y = destino_y2
+                        som_porta2.play()
 
                 if not morto and not morrer:
                     if jogador.colliderect(area_teleporte3):
                         jogador.x = destino_x3
                         jogador.y = destino_y3
+                        som_porta2.play()
 
                 if not morto and not morrer:
                     if jogador.colliderect(area_teleporte4):
                         jogador.x = destino_x4
                         jogador.y = destino_y4
+                        som_porta2.play()
                 
                 if not morto and not morrer:
                     if jogador.colliderect(area_teleporte5):
                         jogador.x = destino_x5
                         jogador.y = destino_y5
+                        som_porta2.play()
                 
                 if not morto and not morrer:
                     if jogador.colliderect(area_teleporte6):
                         jogador.x = destino_x6
                         jogador.y = destino_y6
+                        som_porta2.play()
 
                 if not morto and not morrer:
                     if jogador.colliderect(area_teleporte7):
                         jogador.x = destino_x7
                         jogador.y = destino_y7
+                        som_porta2.play()
 
             if evento.type == KEYDOWN and evento.key == K_l:
                 if not morrer and not morto:
@@ -793,6 +816,7 @@ while True:
 
             if distancia <= 15 and not morto and dano_cooldown_jogador <= 0:
                 vida_jogador -= 1
+                som_vida.play()
                 dano_cooldown_jogador = dano_cooldown_max
                 if vida_jogador <= 0 and not morrer and not morto:
                     morrer = True

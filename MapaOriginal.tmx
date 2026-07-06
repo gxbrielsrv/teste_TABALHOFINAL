@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="17" nextobjectid="221">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="80" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="17" nextobjectid="223">
  <tileset firstgid="1" source="ChaoHospital2.tsx"/>
  <tileset firstgid="1425" source="ChaoHospital1.tsx"/>
  <tileset firstgid="1816" source="ObjetosHospital.tsx"/>
@@ -418,7 +418,6 @@
   <object id="195" x="208" y="222.75" width="12" height="4.25"/>
   <object id="188" x="208" y="242.25" width="48" height="13.25"/>
   <object id="189" x="216" y="172.5" width="4.25" height="54"/>
-  <object id="199" x="25.75" y="215.75" width="103" height="6.75"/>
   <object id="200" x="207.75" y="111.5" width="6" height="32.75"/>
   <object id="201" x="272.5" y="159.75" width="5.75" height="99.25"/>
   <object id="202" x="522.75" y="224" width="8.25" height="16.5"/>
@@ -428,5 +427,6 @@
   <object id="213" x="466.25" y="281.75" width="27" height="3.25"/>
   <object id="216" x="466.25" y="268.75" width="1.75" height="15.5"/>
   <object id="220" x="522.75" y="247.25" width="85.25" height="9.25"/>
+  <object id="222" x="25.75" y="215.5" width="103" height="9"/>
  </objectgroup>
 </map>
