@@ -28,7 +28,36 @@ ARQUIVO_SAVE = "save.txt"
 imagem_final = pygame.image.load("final_casa.png")
 imagem_final = pygame.transform.scale(imagem_final, (LARGURA, ALTURA))
 area_final = pygame.Rect(1095, 190, 24, 24)
-som_porta = pygame.mixer.Sound("porta.wav")
+som_porta = pygame.mixer.Sound("porta.wav")\
+
+area_teleporte = pygame.Rect(48, 210, 18, 18) 
+destino_x = 48  
+destino_y = 190
+
+area_teleporte2 = pygame.Rect(200, 115, 12, 12) 
+destino_x2 = 215 
+destino_y2= 115
+
+area_teleporte3 = pygame.Rect(265, 195, 12, 12) 
+destino_x3 = 280  
+destino_y3= 195
+
+area_teleporte4 = pygame.Rect(564, 240, 8, 8) 
+destino_x4 = 562  
+destino_y4= 265
+
+area_teleporte5 = pygame.Rect(564, 255, 8, 8) 
+destino_x5 = 562
+destino_y5= 225
+
+area_teleporte6 = pygame.Rect(530, 270, 8, 8) 
+destino_x6 = 495
+destino_y6= 275
+
+area_teleporte7 = pygame.Rect(510, 270, 8, 8) 
+destino_x7 = 530
+destino_y7= 270
+
 
 def tela_game_over():
     botao_sair = pygame.Rect(0, 0, 360, 65)
@@ -62,10 +91,25 @@ def tela_game_over():
 
 def mostrar_final():
     botao_sair = pygame.Rect(0, 0, 360, 65)
-    botao_sair.center = (LARGURA // 2, ALTURA - 100) # Posicionado na parte inferior
+    botao_sair.center = (LARGURA // 2, ALTURA - 100) 
+
+    tela.fill((0, 0, 0))
+    pygame.display.flip()
+    
+    pygame.time.wait(500) 
 
     canal = som_porta.play()
-    
+
+    while canal.get_busy():
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        
+        tela.fill((0, 0, 0))
+        pygame.display.flip()
+        clock.tick(60)
 
     while True:
         mouse_pos = pygame.mouse.get_pos()
@@ -76,7 +120,7 @@ def mostrar_final():
             
             if evento.type == MOUSEBUTTONDOWN and evento.button == 1:
                 if botao_sair.collidepoint(evento.pos):
-                    return "menu" # Retorna o comando para voltar ao menu
+                    return "menu" 
 
         tela.blit(imagem_final, (0, 0))
         
@@ -230,9 +274,6 @@ for i in range(7):
     morte_left_list.append(pygame.transform.scale(morte_left.subsurface((i * 21, 0, 21, 16)), (20, 20)))
     morte_right_list.append(pygame.transform.scale(morte_right.subsurface((i * 21, 0, 21, 16)), (20, 20)))
 
-# =====================================================================
-# CARREGAMENTO DOS ASSETS DOS ZUMBIS
-# =====================================================================
 try:
     zumbipeq_down_idle = pygame.image.load('Zombie_Small_Down_Idle-Sheet6.png')
     zumbipeq_up_idle = pygame.image.load('Zombie_Small_Up_Idle-Sheet6.png')
@@ -271,7 +312,6 @@ except Exception as e:
     for lista in [zumbipeq_down_idle_list, zumbipeq_up_idle_list, zumbipeq_left_idle_list, zumbipeq_right_idle_list, zumbipeq_down_walk_list, zumbipeq_up_walk_list, zumbipeq_left_walk_list, zumbipeq_right_walk_list]:
         for s in lista: s.fill((20, 150, 20))
 
-# Função para Efeito de Dano (Flash Vermelho)
 def obter_sprite_vermelha(sprite, alpha=140):
     vermelha = sprite.copy()
     overlay = pygame.Surface(sprite.get_size(), pygame.SRCALPHA)
@@ -492,7 +532,7 @@ while True:
     except:
         fonte_mensagem_cama = pygame.font.Font(None, 28)
   
-    jogador = pygame.Rect(95, 280, 16, 16)
+    jogador = pygame.Rect(95, 280, 14, 14)
     taco_rect = pygame.Rect(450, 270, 16, 16)
     taco_no_chao = True
     tem_taco = False
@@ -517,9 +557,6 @@ while True:
     morto = False
     morrer = False
 
-    # =====================================================================
-    # CONFIGURAÇÃO DE SPAWN DOS ZUMBIS E ATRIBUTOS
-    # =====================================================================
     def criar_zumbi(x, y, velocidade, alcance_deteccao):
         return {
             "rect": pygame.Rect(x, y, 16, 16),
@@ -639,6 +676,42 @@ while True:
                     acao = mostrar_final()
                     if acao == "menu":
                         rodando_jogo = False
+
+                        # Abrir portas
+                if not morto and not morrer:
+                    if jogador.colliderect(area_teleporte):
+                        jogador.x = destino_x
+                        jogador.y = destino_y
+                
+                if not morto and not morrer:
+                    if jogador.colliderect(area_teleporte2):
+                        jogador.x = destino_x2
+                        jogador.y = destino_y2
+
+                if not morto and not morrer:
+                    if jogador.colliderect(area_teleporte3):
+                        jogador.x = destino_x3
+                        jogador.y = destino_y3
+
+                if not morto and not morrer:
+                    if jogador.colliderect(area_teleporte4):
+                        jogador.x = destino_x4
+                        jogador.y = destino_y4
+                
+                if not morto and not morrer:
+                    if jogador.colliderect(area_teleporte5):
+                        jogador.x = destino_x5
+                        jogador.y = destino_y5
+                
+                if not morto and not morrer:
+                    if jogador.colliderect(area_teleporte6):
+                        jogador.x = destino_x6
+                        jogador.y = destino_y6
+
+                if not morto and not morrer:
+                    if jogador.colliderect(area_teleporte7):
+                        jogador.x = destino_x7
+                        jogador.y = destino_y7
 
             if evento.type == KEYDOWN and evento.key == K_l:
                 if not morrer and not morto:
@@ -854,6 +927,10 @@ while True:
         if taco_no_chao:
             tela_jogo.blit(imagem_taco, (taco_rect.x - camera_x, taco_rect.y - camera_y))
 
+        #teste
+        #pygame.draw.rect(tela_jogo, (0, 0, 255), (area_teleporte6.x - camera_x, area_teleporte6.y - camera_y, area_teleporte6.width, area_teleporte6.height), 2)
+        #pygame.draw.rect(tela_jogo, (0, 0, 255), (area_teleporte7.x - camera_x, area_teleporte7.y - camera_y, area_teleporte7.width, area_teleporte7.height), 2)
+
         tela_zoom = pygame.transform.scale(tela_jogo, (LARGURA, ALTURA))
         tela.blit(tela_zoom, (0, 0))
 
@@ -880,5 +957,6 @@ while True:
 
         
         desenhar_hud_jogador(tela, vida_jogador)
+
 
         pygame.display.flip()
