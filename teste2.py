@@ -12,23 +12,19 @@ ALTURA = 600
 ZOOM = 3.5
 
 tela = pygame.display.set_mode((LARGURA, ALTURA))
-pygame.display.set_caption("Jogo com Mapa e Personagem")
+pygame.display.set_caption("Into the Epidemic")
 
 tela_jogo = pygame.Surface((LARGURA // ZOOM, ALTURA // ZOOM))
 clock = pygame.time.Clock()
 
-#mapa
+# Mapa
 NOME_MAPA = "MapaOriginal.tmx"
 MapaOriginal = load_pygame(NOME_MAPA)
 TILE = 16
 
-# ======================================================
-# SISTEMA DE SAVE (Fase 2)
-# ======================================================
 ARQUIVO_SAVE = "save.txt"
 
 def salvar_jogo():
-    """Salva o progresso atual do jogador em um arquivo .txt."""
     try:
         with open(ARQUIVO_SAVE, "w", encoding="utf-8") as arquivo:
             arquivo.write(f"mapa={NOME_MAPA}\n")
@@ -44,7 +40,6 @@ def salvar_jogo():
         print(f"[SAVE] Nao foi possivel salvar o jogo: {erro}")
 
 def carregar_jogo():
-    """Le o arquivo de save (se existir) e devolve um dicionario com os dados."""
     dados_save = {}
     if os.path.exists(ARQUIVO_SAVE):
         try:
@@ -59,11 +54,8 @@ def carregar_jogo():
             print(f"[SAVE] Nao foi possivel ler o save: {erro}")
     return dados_save
 
-# ======================================================
-# FIM DO SISTEMA DE SAVE
-# ======================================================
 
-#colisoes
+# Colisoes
 paredes = []
 camada_colisao = MapaOriginal.get_layer_by_name("Colisao")
 for obj in camada_colisao:
@@ -183,12 +175,7 @@ for i in range(7):
     morte_left_list.append(pygame.transform.scale(morte_left.subsurface((i * 21, 0, 21, 16)), (20, 20)))
     morte_right_list.append(pygame.transform.scale(morte_right.subsurface((i * 21, 0, 21, 16)), (20, 20)))
 
-
-# ======================================================
-# MENU PRINCIPAL - NOVA INTERFACE ESTILO "INTO THE EPIDEMIC"
-# ======================================================
-
-# Fontes baseadas em estilo "pixelado/bloco" utilizando as do sistema (Courier)
+# Fontes 
 pygame.font.init()
 try:
     fonte_titulo_menor = pygame.font.SysFont("courier", 45, bold=True)
@@ -217,74 +204,61 @@ def desenhar_caveira_pixelada(superficie, x, y, cor):
     pygame.draw.rect(superficie, cor, (x - 8, y - 8, 16, 12))
     # Maxilar
     pygame.draw.rect(superficie, cor, (x - 5, y + 4, 10, 5))
-    # Olhos (Vazados escuros)
+    # Olhos 
     pygame.draw.rect(superficie, COR_SOMBRA, (x - 6, y - 3, 4, 4))
     pygame.draw.rect(superficie, COR_SOMBRA, (x + 2, y - 3, 4, 4))
     # Nariz
     pygame.draw.rect(superficie, COR_SOMBRA, (x - 1, y + 1, 2, 3))
-    # Dentes (linhas escuras)
+    # Dentes 
     pygame.draw.line(superficie, COR_SOMBRA, (x - 2, y + 5), (x - 2, y + 8), 1)
     pygame.draw.line(superficie, COR_SOMBRA, (x + 1, y + 5), (x + 1, y + 8), 1)
 
 def desenhar_botao_menu(superficie, rect, texto, mouse_pos, habilitado=True):
     hover = rect.collidepoint(mouse_pos) if habilitado else False
     
-    # Cores condicionais
+    # Cores 
     bg_color = COR_BOTAO_HOVER if hover else COR_BOTAO_BG
     if not habilitado:
         bg_color = COR_BOTAO_DESABILITADO
     cor_texto = (255, 255, 255) if habilitado else (120, 120, 120)
-    cor_cav = COR_CAVEIRA if habilitado else (100, 50, 75)
-
-    # Sombras do botão
     sombra_rect = rect.copy()
     sombra_rect.y += 4
     pygame.draw.rect(superficie, COR_SOMBRA, sombra_rect)
 
-    # Fundo do botão principal
     pygame.draw.rect(superficie, bg_color, rect)
     
-    # Borda externa escura grossa e interna clara
     pygame.draw.rect(superficie, COR_BOTAO_BORDA, rect, width=4)
     pygame.draw.rect(superficie, (100, 130, 160) if habilitado else (70, 80, 90), rect.inflate(-8, -8), width=2)
 
-    # Decorações metálicas/vermelhas nas laterais (braçadeiras)
     largura_bracadeira, altura_bracadeira = 16, 40
-    # Esquerda
     rect_esq = pygame.Rect(rect.left - 8, rect.centery - altura_bracadeira // 2, largura_bracadeira, altura_bracadeira)
     pygame.draw.rect(superficie, COR_BOTAO_DETALHE if habilitado else (100, 60, 60), rect_esq)
     pygame.draw.rect(superficie, COR_BOTAO_BORDA, rect_esq, width=3)
-    # Direita
     rect_dir = pygame.Rect(rect.right - 8, rect.centery - altura_bracadeira // 2, largura_bracadeira, altura_bracadeira)
     pygame.draw.rect(superficie, COR_BOTAO_DETALHE if habilitado else (100, 60, 60), rect_dir)
     pygame.draw.rect(superficie, COR_BOTAO_BORDA, rect_dir, width=3)
 
-    # Caveiras nas pontas
     desenhar_caveira_pixelada(superficie, rect.left + 35, rect.centery,'#FFFFFF')
     desenhar_caveira_pixelada(superficie, rect.right - 35, rect.centery,'#FFFFFF')
 
-    # Texto com sombra
     texto_sombra = fonte_botao_menu.render(texto, True, COR_SOMBRA)
     texto_render = fonte_botao_menu.render(texto, True, cor_texto)
     texto_rect = texto_render.get_rect(center=rect.center)
     
-    # Desenhar sombra levemente deslocada e depois o texto
     superficie.blit(texto_sombra, (texto_rect.x + 2, texto_rect.y + 2))
     superficie.blit(texto_render, texto_rect)
 
 def renderizar_fundo_sombrio(superficie):
     """Renderiza o mapa original ao fundo com um filtro escuro por cima para simular a imagem"""
-    # Desenha o mapa num canto fixo
     for layer in MapaOriginal.visible_layers:
+        
         if hasattr(layer, "data"):
             for x, y, gid in layer:
                 tile = MapaOriginal.get_tile_image_by_gid(gid)
                 if tile:
-                    # Desenhar ampliado igual no jogo, focado no topo esquerdo do mapa
                     tile_zoom = pygame.transform.scale(tile, (int(16 * ZOOM), int(16 * ZOOM)))
                     superficie.blit(tile_zoom, (x * int(16 * ZOOM), y * int(16 * ZOOM)))
     
-    # Camada escura por cima
     overlay = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
     overlay.fill((10, 20, 25, 210)) # Teal muito escuro e quase opaco
     superficie.blit(overlay, (0, 0))
@@ -311,7 +285,6 @@ def desenhar_titulo_jogo(superficie):
     texto_emic = fonte_titulo_maior.render("EMIC", True, COR_TITULO_VERDE)
     sombra_emic = fonte_titulo_maior.render("EMIC", True, COR_SOMBRA)
 
-    # Posicionamento horizontal calculado para centralizar a palavra toda
     largura_total = texto_epi.get_width() + texto_d.get_width() + texto_emic.get_width()
     inicio_x = centro_x - (largura_total // 2)
     y_epidemic = 170
@@ -334,7 +307,6 @@ def desenhar_titulo_jogo(superficie):
 def tela_menu_principal():
     existe_save = os.path.exists(ARQUIVO_SAVE)
 
-    # Botões ligeiramente maiores para caber as decorações
     botao_novo_jogo = pygame.Rect(0, 0, 360, 65)
     botao_continuar = pygame.Rect(0, 0, 360, 65)
 
@@ -364,17 +336,14 @@ def tela_menu_principal():
                         mensagem_aviso = "NENHUM SAVE ENCONTRADO!"
                         mensagem_aviso_ate = agora + 2000
 
-        # Desenha o fundo estilo jogo sombrio
         renderizar_fundo_sombrio(tela)
         
-        # Desenha o título com o layout da imagem
         desenhar_titulo_jogo(tela)
 
-        # Desenha botões
+        
         desenhar_botao_menu(tela, botao_novo_jogo, "NOVO JOGO", mouse_pos)
         desenhar_botao_menu(tela, botao_continuar, "CONTINUAR JOGO", mouse_pos, habilitado=existe_save)
 
-        # Aviso
         if mensagem_aviso and agora < mensagem_aviso_ate:
             texto_aviso = fonte_mensagem_menu.render(mensagem_aviso, True, (255, 100, 100))
             texto_aviso_rect = texto_aviso.get_rect(center=(LARGURA // 2, botao_continuar.bottom + 30))
@@ -394,7 +363,7 @@ def tela_pausa():
     botao_continuar_pausa.center = (LARGURA // 2, ALTURA // 2 - 20)
     botao_sair_pausa.center = (LARGURA // 2, ALTURA // 2 + 70)
 
-    # Título da pausa condizente com a nova tipografia
+
     titulo_pausa = fonte_titulo_maior.render("PAUSADO", True, COR_TITULO_BRANCO)
     sombra_pausa = fonte_titulo_maior.render("PAUSADO", True, COR_SOMBRA)
     titulo_pausa_rect = titulo_pausa.get_rect(center=(LARGURA // 2, ALTURA // 2 - 140))
@@ -420,21 +389,15 @@ def tela_pausa():
         tela.blit(fundo_pausa, (0, 0))
         tela.blit(overlay, (0, 0))
         
-        # Desenha título Pausa
+        # Desenha pausa
         tela.blit(sombra_pausa, (titulo_pausa_rect.x + 5, titulo_pausa_rect.y + 5))
         tela.blit(titulo_pausa, titulo_pausa_rect)
 
-        # Usa o mesmo estilo de botões
         desenhar_botao_menu(tela, botao_continuar_pausa, "CONTINUAR", mouse_pos)
         desenhar_botao_menu(tela, botao_sair_pausa, "SAIR", mouse_pos)
 
         pygame.display.flip()
         clock.tick(60)
-
-# ======================================================
-# FIM DO MENU PRINCIPAL E MENU DE PAUSA
-# ======================================================
-
 
 while True:
     opcao_menu = tela_menu_principal()
@@ -442,19 +405,16 @@ while True:
     velocidade = 1
     velocidade_shift = 1.6
 
-    # === CÓDIGO NOVO: VARIÁVEIS DA MENSAGEM DA CAMA ===
     mensagem_cama_ativa = True
 
-    # Se o jogador estiver continuando um save, não precisamos mostrar a mensagem
-    if opcao_menu == "continuar" and dados_save:
+    if opcao_menu == "continuar" :
         mensagem_cama_ativa = False
 
-    # Criando uma fonte no mesmo estilo do título
     try:
         fonte_mensagem_cama = pygame.font.SysFont("courier", 28, bold=True)
     except:
         fonte_mensagem_cama = pygame.font.Font(None, 28)
-    # ==================================================
+  
 
     jogador = pygame.Rect(95, 280, 16, 16)
     taco_rect = pygame.Rect(450, 270, 16, 16)
@@ -476,9 +436,6 @@ while True:
     velocidade = 1
     velocidade_shift = 1.6
 
-    # ======================================================
-    # NOVO JOGO / CONTINUAR JOGO (Fase 3)
-    # ======================================================
     if opcao_menu == "novo":
         salvar_jogo()
     elif opcao_menu == "continuar":
@@ -677,21 +634,12 @@ while True:
         camera_y = jogador.centery - (ALTURA // ZOOM) // 2
 
         tela_jogo.fill((0, 0, 0))
-
-        for layer in MapaOriginal.visible_layers:
-            if hasattr(layer, "data"):
-                for x, y, gid in layer:
-                    tile = MapaOriginal.get_tile_image_by_gid(gid)
-                    if tile:
-                        tela_jogo.blit(tile, (x * TILE - camera_x, y * TILE - camera_y))
-
-        if taco_no_chao:
-            tela_jogo.blit(imagem_taco, (taco_rect.x - camera_x, taco_rect.y - camera_y))
-
         sprite = animacao_atual[frame]
+
         offset_x = (sprite.get_width() - jogador.width) // 2
         offset_y = sprite.get_height() - jogador.height
-        pos_sprite = (jogador.x - camera_x - offset_x, jogador.y - camera_y - offset_y)
+
+        pos_sprite = (jogador.x - camera_x - offset_x,jogador.y - camera_y - offset_y)
 
         taco_sprite = None
         pos_taco = None
@@ -718,14 +666,36 @@ while True:
             taco_offset_x = (taco_sprite.get_width() - jogador.width) // 2
             taco_offset_y = taco_sprite.get_height() - jogador.height
             pos_taco = (jogador.x - camera_x - taco_offset_x, jogador.y - camera_y - taco_offset_y)
+        for layer in MapaOriginal.visible_layers:
+            if hasattr(layer, "data"):
+                for x, y, gid in layer:
+                    tile = MapaOriginal.get_tile_image_by_gid(gid)
+                    if tile:
+                        tela_jogo.blit(tile, (x * TILE - camera_x, y * TILE - camera_y))
 
-        if taco_sprite is not None and ultima_direcao == 'up':
-            tela_jogo.blit(taco_sprite, pos_taco)
-            tela_jogo.blit(sprite, pos_sprite)
-        else:
-            tela_jogo.blit(sprite, pos_sprite)
-            if taco_sprite is not None:
-                tela_jogo.blit(taco_sprite, pos_taco)
+            if layer.name == "JOGADOR":
+
+                if taco_sprite is not None and ultima_direcao == "up":
+                    tela_jogo.blit(taco_sprite, pos_taco)
+
+                tela_jogo.blit(sprite, pos_sprite)
+
+                if taco_sprite is not None and ultima_direcao != "up":
+                    tela_jogo.blit(taco_sprite, pos_taco)
+
+
+        if taco_no_chao:
+            tela_jogo.blit(imagem_taco, (taco_rect.x - camera_x, taco_rect.y - camera_y))
+
+        sprite = animacao_atual[frame]
+        offset_x = (sprite.get_width() - jogador.width) // 2
+        offset_y = sprite.get_height() - jogador.height
+        pos_sprite = (jogador.x - camera_x - offset_x, jogador.y - camera_y - offset_y)
+
+
+
+
+      
 
         tela_zoom = pygame.transform.scale(tela_jogo, (LARGURA, ALTURA))
         tela.blit(tela_zoom, (0, 0))

@@ -1,0 +1,9 @@
+mapa=MapaOriginal.tmx
+pos_x=47
+pos_y=171
+direcao=right
+tem_taco=False
+taco_no_chao=True
+taco_x=450
+taco_y=270
+morto=True
