@@ -28,6 +28,8 @@ ARQUIVO_SAVE = "save.txt"
 imagem_final = pygame.image.load("final_casa.png")
 imagem_final = pygame.transform.scale(imagem_final, (LARGURA, ALTURA))
 area_final = pygame.Rect(1095, 190, 24, 24)
+
+# Efeitos sonoros
 som_porta = pygame.mixer.Sound("porta.wav")
 som_porta2 = pygame.mixer.Sound("som_porta2.wav")
 som_porta2.set_volume(0.1)
@@ -39,7 +41,7 @@ som_soco = pygame.mixer.Sound('somsoco.wav')
 som_soco.set_volume(0.2)
 
 
-
+# Sistema de portas
 area_teleporte = pygame.Rect(48, 210, 18, 18) 
 destino_x = 48  
 destino_y = 190
@@ -68,7 +70,7 @@ area_teleporte7 = pygame.Rect(510, 270, 8, 8)
 destino_x7 = 530
 destino_y7= 270
 
-
+# Funçoes
 def tela_game_over():
     botao_sair = pygame.Rect(0, 0, 360, 65)
     botao_sair.center = (LARGURA // 2, ALTURA // 2 + 50)
@@ -171,6 +173,7 @@ def salvar_jogo():
             arquivo.write(f"vida_jogador={vida_jogador}\n")
             for i, zumbi in enumerate(lista_zumbis):
                 arquivo.write(f"zumbi_{i}_vivo={zumbi['vivo']}\n")
+                arquivo.write(f"zumbi_{i}_morto={zumbi['morto']}\n")
     except Exception as erro:
         print(f"[SAVE] Nao foi possivel salvar o jogo: {erro}")
 
@@ -295,8 +298,18 @@ try:
     zumbipeq_left_walk = pygame.image.load('Zombie_Small_Side-left_Walk-Sheet6.png')
     zumbipeq_right_walk = pygame.image.load('Zombie_Small_Side_Walk-Sheet6.png')
 
+    zumbipeq_attack_down = pygame.image.load('Zombie_Small_Down_First-Attack-Sheet4.png')
+    zumbipeq_attack_up = pygame.image.load('Zombie_Small_Up_First-Attack-Sheet4.png')
+    zumbipeq_attack_left = pygame.image.load('Zombie_Small_Side-left_First-Attack-Sheet4.png')
+    zumbipeq_attack_right = pygame.image.load('Zombie_Small_Side_First-Attack-Sheet4.png')
+
+    zumbipeq_death_right = pygame.image.load('Zombie_Small_Side_Second-Death-Sheet7.png')
+    zumbipeq_death_left = pygame.image.load('Zombie_Small_Side-left_Second-Death-Sheet7.png')
+
     zumbipeq_down_idle_list = []; zumbipeq_up_idle_list = []; zumbipeq_left_idle_list = []; zumbipeq_right_idle_list = []
     zumbipeq_down_walk_list = []; zumbipeq_up_walk_list = []; zumbipeq_left_walk_list = []; zumbipeq_right_walk_list = []
+    zumbipeq_attack_down_list = []; zumbipeq_attack_up_list = []; zumbipeq_attack_left_list = []; zumbipeq_attack_right_list = []
+    zumbipeq_death_right_list = []; zumbipeq_death_left_list = []
 
     for i in range(6):
         zumbipeq_down_idle_list.append(pygame.transform.scale(zumbipeq_down_idle.subsurface((i * 13, 0, 13, 16)), (16, 16)))
@@ -308,8 +321,19 @@ try:
         zumbipeq_up_walk_list.append(pygame.transform.scale(zumbipeq_up_walk.subsurface((i * 13, 0, 13, 16)), (16, 16)))
         zumbipeq_left_walk_list.append(pygame.transform.scale(zumbipeq_left_walk.subsurface((i * 13, 0, 13, 15)), (16, 16)))
         zumbipeq_right_walk_list.append(pygame.transform.scale(zumbipeq_right_walk.subsurface((i * 13, 0, 13, 15)), (16, 16)))
+
+    for i in range(4):
+        zumbipeq_attack_down_list.append(pygame.transform.scale(zumbipeq_attack_down.subsurface((i * 13, 0, 13, 16)), (16, 16)))
+        zumbipeq_attack_up_list.append(pygame.transform.scale(zumbipeq_attack_up.subsurface((i * 14, 0, 14, 15)), (16, 16)))
+        zumbipeq_attack_left_list.append(pygame.transform.scale(zumbipeq_attack_left.subsurface((i * 11, 0, 11, 14)), (16, 16)))
+        zumbipeq_attack_right_list.append(pygame.transform.scale(zumbipeq_attack_right.subsurface((i * 11, 0, 11, 14)), (16, 16)))
+
+    for i in range(7):
+        zumbipeq_death_right_list.append(pygame.transform.scale(zumbipeq_death_right.subsurface((i * 16, 0, 16, 16)), (16, 16)))
+        zumbipeq_death_left_list.append(pygame.transform.scale(zumbipeq_death_left.subsurface((i * 16, 0, 16, 16)), (16, 16)))
+
 except Exception as e:
-    print(f"Aviso: Nao foi possivel carregar alguma imagem de zumbi ({e}). Usando superficies verdes.")
+    print(f"Aviso: Nao foi possivel carregar alguma imagem de zumbi ({e}). Usando superficies coloridas.")
     zumbipeq_down_idle_list = [pygame.Surface((16,16)) for _ in range(6)]
     zumbipeq_up_idle_list = [pygame.Surface((16,16)) for _ in range(6)]
     zumbipeq_left_idle_list = [pygame.Surface((16,16)) for _ in range(6)]
@@ -318,9 +342,22 @@ except Exception as e:
     zumbipeq_up_walk_list = [pygame.Surface((16,16)) for _ in range(6)]
     zumbipeq_left_walk_list = [pygame.Surface((16,16)) for _ in range(6)]
     zumbipeq_right_walk_list = [pygame.Surface((16,16)) for _ in range(6)]
-    
-    for lista in [zumbipeq_down_idle_list, zumbipeq_up_idle_list, zumbipeq_left_idle_list, zumbipeq_right_idle_list, zumbipeq_down_walk_list, zumbipeq_up_walk_list, zumbipeq_left_walk_list, zumbipeq_right_walk_list]:
+    zumbipeq_attack_down_list = [pygame.Surface((16,16)) for _ in range(4)]
+    zumbipeq_attack_up_list = [pygame.Surface((16,16)) for _ in range(4)]
+    zumbipeq_attack_left_list = [pygame.Surface((16,16)) for _ in range(4)]
+    zumbipeq_attack_right_list = [pygame.Surface((16,16)) for _ in range(4)]
+    zumbipeq_death_right_list = [pygame.Surface((16,16)) for _ in range(7)]
+    zumbipeq_death_left_list = [pygame.Surface((16,16)) for _ in range(7)]
+
+    for lista in [zumbipeq_down_idle_list, zumbipeq_up_idle_list, zumbipeq_left_idle_list, zumbipeq_right_idle_list,
+                  zumbipeq_down_walk_list, zumbipeq_up_walk_list, zumbipeq_left_walk_list, zumbipeq_right_walk_list]:
         for s in lista: s.fill((20, 150, 20))
+
+    for lista in [zumbipeq_attack_down_list, zumbipeq_attack_up_list, zumbipeq_attack_left_list, zumbipeq_attack_right_list]:
+        for s in lista: s.fill((200, 120, 20))
+
+    for lista in [zumbipeq_death_right_list, zumbipeq_death_left_list]:
+        for s in lista: s.fill((80, 20, 20))
 
 def obter_sprite_vermelha(sprite, alpha=140):
     vermelha = sprite.copy()
@@ -580,7 +617,14 @@ while True:
             "vida": 5,
             "dano_cooldown": 0,
             "flash_timer": 0,
-            "mostrar_vermelho": False
+            "mostrar_vermelho": False,
+            "atacando": False,
+            "ataque_frame": 0,
+            "ataque_anim_time": 0,
+            "ataque_cooldown": 0,
+            "dano_aplicado": False,
+            "morrendo": False,
+            "morto": False,
         }
 
     # Adicionar zumbis 
@@ -607,6 +651,10 @@ while True:
                 for i, zumbi in enumerate(lista_zumbis):
                     status_str = dados_save.get(f"zumbi_{i}_vivo", "True")
                     zumbi["vivo"] = (status_str == "True")
+                    morto_str = dados_save.get(f"zumbi_{i}_morto", "False")
+                    zumbi["morto"] = (morto_str == "True")
+                    if zumbi["morto"]:
+                        zumbi["frame"] = len(zumbipeq_death_left_list) - 1
                 
 
                 if morto:
@@ -672,6 +720,10 @@ while True:
                                     som_taco.play()
                                 if zumbi["vida"] <= 0:
                                     zumbi["vivo"] = False
+                                    zumbi["atacando"] = False
+                                    zumbi["morrendo"] = True
+                                    zumbi["frame"] = 0
+                                    zumbi["anim_time"] = 0
 
             if evento.type == KEYDOWN and evento.key == K_e:
                 if not pegar and not atacar and not morrer and not morto:
@@ -796,6 +848,22 @@ while True:
             mostrar_vermelho_jogador = False
 
         for zumbi in lista_zumbis:
+
+            if zumbi["morrendo"]:
+                zumbi["anim_time"] += dt
+                if zumbi["anim_time"] >= 96:
+                    zumbi["anim_time"] = 0
+                    max_frame_morte = len(zumbipeq_death_left_list) - 1
+                    if zumbi["frame"] < max_frame_morte:
+                        zumbi["frame"] += 1
+                    else:
+                        zumbi["morrendo"] = False
+                        zumbi["morto"] = True  
+                continue
+
+            if zumbi["morto"]:
+                continue  
+
             if not zumbi["vivo"]:
                 continue
 
@@ -808,22 +876,45 @@ while True:
             else:
                 zumbi["mostrar_vermelho"] = False
 
+            if zumbi["ataque_cooldown"] > 0:
+                zumbi["ataque_cooldown"] -= dt
+
             dx_z = jogador.centerx - zumbi["rect"].centerx
             dy_z = jogador.centery - zumbi["rect"].centery
             distancia = math.hypot(dx_z, dy_z)
 
             zumbi["movendo"] = False
 
-            if distancia <= 15 and not morto and dano_cooldown_jogador <= 0:
-                vida_jogador -= 1
-                som_vida.play()
-                dano_cooldown_jogador = dano_cooldown_max
-                if vida_jogador <= 0 and not morrer and not morto:
-                    morrer = True
-                    frame = 0
-                    anim_time = 0
-                    if ultima_direcao == 'right': animacao_atual = morte_right_list
-                    elif ultima_direcao == 'left': animacao_atual = morte_left_list
+            if zumbi["atacando"]:
+                zumbi["ataque_anim_time"] += dt
+                if zumbi["ataque_anim_time"] >= 96:
+                    zumbi["ataque_anim_time"] = 0
+                    zumbi["ataque_frame"] += 1
+
+                    if (zumbi["ataque_frame"] >= 3 and not zumbi["dano_aplicado"]
+                            and not morto and dano_cooldown_jogador <= 0
+                            and distancia <= 16):
+                        zumbi["dano_aplicado"] = True
+                        vida_jogador -= 1
+                        som_vida.play()
+                        dano_cooldown_jogador = dano_cooldown_max
+                        if vida_jogador <= 0 and not morrer and not morto:
+                            morrer = True
+                            frame = 0
+                            anim_time = 0
+                            if ultima_direcao == 'right': animacao_atual = morte_right_list
+                            elif ultima_direcao == 'left': animacao_atual = morte_left_list
+
+                    if zumbi["ataque_frame"] >= 4:
+                        zumbi["ataque_frame"] = 0
+                        zumbi["atacando"] = False
+                        zumbi["ataque_cooldown"] = 900
+
+            elif distancia <= 15 and not morto and zumbi["ataque_cooldown"] <= 0:
+                zumbi["atacando"] = True
+                zumbi["dano_aplicado"] = False
+                zumbi["ataque_frame"] = 0
+                zumbi["ataque_anim_time"] = 0
 
             elif 14 < distancia <= zumbi["alcance_deteccao"] and not morto:
                 zumbi["movendo"] = True
@@ -847,12 +938,13 @@ while True:
                     zumbi["direcao"] = "right" if dx_z > 0 else "left"
                 elif abs(dy_z) > abs(dx_z) * 1.5:
                     zumbi["direcao"] = "down" if dy_z > 0 else "up"
+            
+            if not zumbi["atacando"]:
+                zumbi["anim_time"] += dt
+                if zumbi["anim_time"] >= 96:
+                    zumbi["anim_time"] = 0
+                    zumbi["frame"] = (zumbi["frame"] + 1) % 6
 
-            if zumbi["anim_time"] >= 96:
-                zumbi["anim_time"] = 0
-                zumbi["frame"] = (zumbi["frame"] + 1) % 6
-
-        # Atualização do Jogador
         anim_time += dt
         if anim_time >= 96:
             anim_time = 0
@@ -922,22 +1014,37 @@ while True:
 
 
                 for zumbi in lista_zumbis:
-                    if zumbi["vivo"]:
-                        if zumbi["movendo"]:
+                    if zumbi["vivo"] or zumbi["morrendo"] or zumbi["morto"]:
+
+                        if zumbi["morrendo"] or zumbi["morto"]:
+                            anim_z = zumbipeq_death_left_list if zumbi["direcao"] == "left" else zumbipeq_death_right_list
+                            indice_frame = zumbi["frame"]
+
+                        elif zumbi["atacando"]:
+                            if zumbi["direcao"] == "down": anim_z = zumbipeq_attack_down_list
+                            elif zumbi["direcao"] == "up": anim_z = zumbipeq_attack_up_list
+                            elif zumbi["direcao"] == "left": anim_z = zumbipeq_attack_left_list
+                            else: anim_z = zumbipeq_attack_right_list
+                            indice_frame = zumbi["ataque_frame"]
+
+                        elif zumbi["movendo"]:
                             if zumbi["direcao"] == "down": anim_z = zumbipeq_down_walk_list
                             elif zumbi["direcao"] == "up": anim_z = zumbipeq_up_walk_list
                             elif zumbi["direcao"] == "left": anim_z = zumbipeq_left_walk_list
                             else: anim_z = zumbipeq_right_walk_list
+                            indice_frame = zumbi["frame"]
+
                         else:
                             if zumbi["direcao"] == "down": anim_z = zumbipeq_down_idle_list
                             elif zumbi["direcao"] == "up": anim_z = zumbipeq_up_idle_list
                             elif zumbi["direcao"] == "left": anim_z = zumbipeq_left_idle_list
                             else: anim_z = zumbipeq_right_idle_list
+                            indice_frame = zumbi["frame"]
 
-                        zumbi_sprite_base = anim_z[zumbi["frame"]]
+                        indice_frame = min(indice_frame, len(anim_z) - 1)
+                        zumbi_sprite_base = anim_z[indice_frame]
                         
-                        
-                        if zumbi["mostrar_vermelho"]:
+                        if zumbi["mostrar_vermelho"] and zumbi["vivo"]:
                             zumbi_sprite = obter_sprite_vermelha(zumbi_sprite_base)
                         else:
                             zumbi_sprite = zumbi_sprite_base
