@@ -171,6 +171,7 @@ def salvar_jogo():
             arquivo.write(f"taco_y={taco_rect.y}\n")
             arquivo.write(f"morto={morto}\n")
             arquivo.write(f"vida_jogador={vida_jogador}\n")
+            arquivo.write(f"zumbis_mortos={zumbis_mortos}\n")
             for i, zumbi in enumerate(lista_zumbis):
                 arquivo.write(f"zumbi_{i}_vivo={zumbi['vivo']}\n")
                 arquivo.write(f"zumbi_{i}_morto={zumbi['morto']}\n")
@@ -587,6 +588,7 @@ while True:
 
     # Status do Jogador
     vida_jogador = 8
+    zumbis_mortos = 0
     dano_cooldown_jogador = 0
     dano_cooldown_max = 1000
     mostrar_vermelho_jogador = False
@@ -648,6 +650,7 @@ while True:
                 taco_rect.y = int(dados_save.get("taco_y", taco_rect.y))
                 morto = dados_save.get("morto", str(morto)) == "True"
                 vida_jogador = int(dados_save.get("vida_jogador", 8))
+                zumbis_mortos = int(dados_save.get("zumbis_mortos", 0))
                 for i, zumbi in enumerate(lista_zumbis):
                     status_str = dados_save.get(f"zumbi_{i}_vivo", "True")
                     zumbi["vivo"] = (status_str == "True")
@@ -720,6 +723,7 @@ while True:
                                     som_taco.play()
                                 if zumbi["vida"] <= 0:
                                     zumbi["vivo"] = False
+                                    zumbis_mortos += 1
                                     zumbi["atacando"] = False
                                     zumbi["morrendo"] = True
                                     zumbi["frame"] = 0
@@ -1084,7 +1088,16 @@ while True:
             rect_txt = branco_txt.get_rect(center=(LARGURA // 2, ALTURA - 60))
 
             tela.blit(sombra_txt, (rect_txt.x + 3, rect_txt.y + 3))
-            tela.blit(branco_txt, rect_txt)     
+            tela.blit(branco_txt, rect_txt)
+
+        texto_kills = fonte_botao_menu.render(f"Kills: {zumbis_mortos}", True, COR_TITULO_BRANCO)
+        sombra_kills = fonte_botao_menu.render(f"Kills: {zumbis_mortos}", True, COR_SOMBRA)
+        
+        pos_x_kills = LARGURA - texto_kills.get_width() - 20
+        pos_y_kills = 20
+        
+        tela.blit(sombra_kills, (pos_x_kills + 2, pos_y_kills + 2))
+        tela.blit(texto_kills, (pos_x_kills, pos_y_kills))
 
         
         desenhar_hud_jogador(tela, vida_jogador)

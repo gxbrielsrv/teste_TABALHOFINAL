@@ -8,6 +8,7 @@ taco_x=450
 taco_y=270
 morto=False
 vida_jogador=8
+zumbis_mortos=0
 zumbi_0_vivo=True
 zumbi_0_morto=False
 zumbi_1_vivo=True
