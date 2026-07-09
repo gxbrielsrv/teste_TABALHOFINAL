@@ -888,14 +888,14 @@ while True:
                         jogador.y = destino_y7
                         som_porta2.play()
 
-            if evento.type == KEYDOWN and evento.key == K_l:
-                if not morrer and not morto:
-                    morrer = True
-                    frame = 0
-                    anim_time = 0
+            #if evento.type == KEYDOWN and evento.key == K_l:
+                #if not morrer and not morto:
+                    #morrer = True
+                    #frame = 0
+                    #anim_time = 0
 
-                    if ultima_direcao == 'right': animacao_atual = morte_right_list
-                    elif ultima_direcao == 'left': animacao_atual = morte_left_list
+                    #if ultima_direcao == 'right': animacao_atual = morte_right_list
+                    #elif ultima_direcao == 'left': animacao_atual = morte_left_list
 
         if not rodando_jogo:
             break
