@@ -788,7 +788,7 @@ while True:
         if ultima_direcao == "left":
             draw_x -= 30
         # elif ultima_direcao == "right":
-        #     draw_x += 10 
+        #    draw_x += 10 
 
     if mostrar_vermelho:
         screen.blit(obter_sprite_vermelha(animacao_atual[frame]), (draw_x, draw_y))
